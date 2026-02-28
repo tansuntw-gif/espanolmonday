@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>西語學習大師 - 第5至8課</title>
+    <title>西語學習大師 - 口說增強版</title>
     <style>
-        :root { --primary: #007AFF; --secondary: #6c757d; --success: #34C759; --danger: #FF3B30; }
+        :root { --primary: #007AFF; --secondary: #6c757d; --success: #34C759; --danger: #FF3B30; --voice: #5856D6; }
         body { font-family: -apple-system, sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
         .card { width: 90%; max-width: 450px; padding: 25px; background: white; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center; }
         .menu-grid { display: grid; grid-template-columns: repeat(1, 1fr); gap: 10px; margin-top: 20px; max-height: 400px; overflow-y: auto; padding: 5px; }
@@ -17,17 +17,19 @@
         input[type="text"] { width: 100%; padding: 15px; font-size: 18px; border: 2px solid #ddd; border-radius: 12px; margin-bottom: 15px; text-align: center; outline: none; box-sizing: border-box; }
         input[type="text"]:focus { border-color: var(--primary); }
         .ans-display { font-size: 18px; color: var(--primary); font-weight: bold; margin-bottom: 15px; display: none; background: #eef7ff; padding: 10px; border-radius: 10px; cursor: pointer; }
-        button.action-btn { width: 100%; border: none; padding: 15px; border-radius: 12px; font-size: 18px; cursor: pointer; font-weight: bold; margin-bottom: 10px; }
+        button.action-btn { width: 100%; border: none; padding: 15px; border-radius: 12px; font-size: 18px; cursor: pointer; font-weight: bold; margin-bottom: 10px; transition: 0.3s; }
         .btn-check { background: var(--primary); color: white; }
         .btn-next { background: var(--secondary); color: white; }
         .btn-back { background: none; color: var(--secondary); font-size: 14px; text-decoration: underline; border: none; cursor: pointer; }
+        #mic-btn.listening { background-color: var(--danger) !important; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
     </style>
 </head>
 <body>
 
 <div class="card" id="menu-screen">
     <h2 style="margin-top:0">選擇課程</h2>
-    <p style="color:#666">第 5 課至第 8 課</p>
+    <p style="color:#666">第 5 課至第 8 課 (支援口說)</p>
     <div class="menu-grid" id="lesson-menu"></div>
 </div>
 
@@ -38,18 +40,23 @@
         <div id="score">得分: 0</div>
     </div>
     <div id="chinese-text">題目載入中...</div>
-    <input type="text" id="user-input" placeholder="請輸入西文..." autocomplete="off">
-       <button id="mic-btn" class="action-btn" style="background-color: #5856D6; color: white; margin-top: 10px;" onclick="startListening()">
-      🎤 按下開始口說</button>
+    
+    <input type="text" id="user-input" placeholder="請輸入或用說的..." autocomplete="off">
+    
+    <button id="mic-btn" class="action-btn" style="background-color: var(--voice); color: white;" onclick="startListening()">
+        🎤 按下開始口說
+    </button>
+
     <div id="feedback" style="margin-bottom:10px; font-weight:bold;"></div>
     <div id="ans-display" class="ans-display" onclick="speakCurrent()"></div>
+    
     <div class="btn-group">
         <button id="check-btn" class="action-btn btn-check" onclick="checkAnswer()">檢查答案</button>
         <button class="action-btn btn-next" onclick="nextQuestion()">下一題</button>
         <button class="btn-back" onclick="goToMenu()">回主選單</button>
     </div>
 </div>
-
+    
 <script>
     const allLessons = {
         "第 5 課：¿Dónde está la estación? (車站在哪裡？)": [
@@ -141,10 +148,45 @@
         ]
     };
 
-    let currentQuestions = [];
+let currentQuestions = [];
     let currentIndex = 0;
     let currentScore = 0;
 
+    // --- 語音辨識邏輯 ---
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    let recognition;
+
+    if (SpeechRecognition) {
+        recognition = new SpeechRecognition();
+        recognition.lang = 'es-ES'; // 西班牙口音
+        recognition.interimResults = false;
+
+        recognition.onresult = (event) => {
+            const transcript = event.results[0][0].transcript;
+            document.getElementById('user-input').value = transcript;
+            checkAnswer(); // 辨識完自動檢查
+        };
+
+        recognition.onend = () => {
+            const btn = document.getElementById('mic-btn');
+            btn.classList.remove('listening');
+            btn.innerText = "🎤 按下開始口說";
+        };
+
+        recognition.onerror = () => {
+            alert("口說辨識出錯，請檢查權限或網路。");
+        };
+    }
+
+    function startListening() {
+        if (!recognition) return alert("您的瀏覽器不支援口說辨識");
+        recognition.start();
+        const btn = document.getElementById('mic-btn');
+        btn.classList.add('listening');
+        btn.innerText = "正在聽...請說西文";
+    }
+
+    // --- 基礎功能邏輯 (Menu, Show, Check, Next, Speak) ---
     function initMenu() {
         const menu = document.getElementById('lesson-menu');
         menu.innerHTML = "";
@@ -180,42 +222,28 @@
         userInput.focus();
     }
 
-    function removeAccents(str) {
-        return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-    }
-
     function checkAnswer() {
         const userInput = document.getElementById('user-input');
         const userValue = userInput.value.trim();
         const correctAnswer = currentQuestions[currentIndex].sp;
-        
-        const userClean = removeAccents(userValue.toLowerCase().replace(/[¿?.,!]/g, ""));
-        const correctClean = removeAccents(correctAnswer.toLowerCase().replace(/[¿?.,!]/g, ""));
+        const userClean = userValue.toLowerCase().replace(/[¿?.,!]/g, "").normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        const correctClean = correctAnswer.toLowerCase().replace(/[¿?.,!]/g, "").normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
         const feedback = document.getElementById('feedback');
         const ansDisp = document.getElementById('ans-display');
 
         if (userClean === correctClean) {
             currentScore += 10;
-            const isPerfect = userValue.replace(/[¿?.,!]/g, "") === correctAnswer.replace(/[¿?.,!]/g, "");
-            feedback.innerText = isPerfect ? "¡Perfecto! 全對！🌟" : "答對了！但要注意重音符號：";
-            feedback.style.color = isPerfect ? "var(--success)" : "#FF9500";
-            
-            const words = correctAnswer.split(' ');
-            ansDisp.innerHTML = words.map(word => /[áéíóúñÁÉÍÓÚÑ]/.test(word) ? `<span style="color:red">${word}</span>` : word).join(' ') + " 🔊";
+            feedback.innerText = "¡Muy bien! 正確！";
+            feedback.style.color = "var(--success)";
+            ansDisp.innerHTML = correctAnswer + " 🔊";
             ansDisp.style.display = "block";
             userInput.style.borderColor = "var(--success)";
             speak(correctAnswer);
         } else {
-            feedback.innerText = "拼字有誤，再試試看！";
+            feedback.innerText = "再試一次！";
             feedback.style.color = "var(--danger)";
             userInput.style.borderColor = "var(--danger)";
-            ansDisp.innerText = "點擊此處查看答案 🔊";
-            ansDisp.onclick = () => {
-                ansDisp.innerHTML = correctAnswer + " 🔊";
-                speak(correctAnswer);
-            };
-            ansDisp.style.display = "block";
         }
     }
 
@@ -224,7 +252,7 @@
             currentIndex++;
             showQuestion();
         } else {
-            alert(`課程完成！總分：${currentScore}`);
+            alert("課程結束！");
             goToMenu();
         }
     }
@@ -243,57 +271,7 @@
     function speakCurrent() {
         speak(currentQuestions[currentIndex].sp);
     }
-    
-// 定義語音辨識物件
-const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-let recognition;
 
-if (SpeechRecognition) {
-    recognition = new SpeechRecognition();
-    recognition.lang = 'es-ES'; // 設定辨識語言為西班牙文
-    recognition.interimResults = false; // 是否顯示中間辨識結果
-    recognition.maxAlternatives = 1;
-
-    // 當辨識到聲音後的處理
-    recognition.onresult = (event) => {
-        const transcript = event.results[0][0].transcript;
-        document.getElementById('user-input').value = transcript;
-        document.getElementById('mic-btn').innerText = "🎤 按下開始口說";
-        document.getElementById('mic-btn').style.backgroundColor = "#5856D6";
-        
-        // 自動觸發檢查答案（選用）
-        checkAnswer();
-    };
-
-    recognition.onerror = (event) => {
-        console.error("語音辨識錯誤:", event.error);
-        alert("語音辨識失敗，請檢查麥克風權限");
-        resetMicBtn();
-    };
-
-    recognition.onend = () => {
-        resetMicBtn();
-    };
-} else {
-    alert("您的瀏覽器不支援語音辨識功能，請使用 Chrome。");
-}
-
-function startListening() {
-    if (!recognition) return;
-    
-    // 變更按鈕狀態
-    const micBtn = document.getElementById('mic-btn');
-    micBtn.innerText = "Listening... (請說西文)";
-    micBtn.style.backgroundColor = "#FF3B30"; // 錄音中顯示紅色
-    
-    recognition.start();
-}
-
-function resetMicBtn() {
-    const micBtn = document.getElementById('mic-btn');
-    micBtn.innerText = "🎤 按下開始口說";
-    micBtn.style.backgroundColor = "#5856D6";
-}
     initMenu();
 </script>
 </body>
