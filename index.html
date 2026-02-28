@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>西語學習大師 - 口說增強版</title>
+    <title>西語學習大師 - 精確校正版</title>
     <style>
         :root { --primary: #007AFF; --secondary: #6c757d; --success: #34C759; --danger: #FF3B30; --voice: #5856D6; }
         body { font-family: -apple-system, sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
@@ -40,16 +40,12 @@
         <div id="score">得分: 0</div>
     </div>
     <div id="chinese-text">題目載入中...</div>
-    
     <input type="text" id="user-input" placeholder="請輸入或用說的..." oninput="resetCheckBtn()">
-    
     <button id="mic-btn" class="action-btn" style="background-color: var(--voice); color: white;" onclick="startListening()">
         🎤 按下開始口說
     </button>
-
     <div id="feedback" style="margin-bottom:10px; font-weight:bold;"></div>
     <div id="ans-display" class="ans-display" onclick="speakCurrent()"></div>
-    
     <div class="btn-group">
         <button id="check-btn" class="action-btn btn-check" onclick="checkAnswer()">檢查答案</button>
         <button class="action-btn btn-next" onclick="nextQuestion()">下一題</button>
@@ -58,6 +54,7 @@
 </div>
 
 <script>
+    // --- 題庫資料 ---
     const allLessons = {
         "第 5 課：¿Dónde está la estación? (車站在哪裡？)": [
             { ch: "不好意思，普拉多博物館在哪裡？", sp: "Perdone, ¿dónde está el museo del Prado?" },
@@ -67,7 +64,7 @@
             { ch: "嗨，安東尼奧。真巧。你住在這附近嗎？", sp: "Hola, Antonio. Qué casualidad. ¿Vives cerca de aquí?" },
             { ch: "不，我在這裡是因為我和女朋友有約。", sp: "No, estoy aquí porque tengo una cita con mi novia." },
             { ch: "你現在住在哪裡？我住在合租公寓。公寓在索里亞街。", sp: "¿Dónde vives ahora? Vivo en un piso compartido. El piso está en la calle Zorrilla." },
-            { ch: "我筋疲力竭，因為我有很多工作。", sp: "Estoy agotado because tengo mucho trabajo." },
+            { ch: "我筋疲力竭，因為我有很多工作。", sp: "Estoy agotado porque tengo mucho trabajo." },
             { ch: "你來自哪裡？我來自馬德里。", sp: "¿De dónde eres tú? Yo soy de Madrid." },
             { ch: "你住在哪裡？我和朋友住在一間公寓裡。", sp: "¿Dónde vives? Vivo en un piso con mi amigo." },
             { ch: "公寓在哪裡？公寓在一家麵包店對面。", sp: "¿Dónde está el piso? El piso está enfrente de una panadería." },
@@ -75,7 +72,7 @@
             { ch: "公寓在報攤旁邊嗎？公寓就在那裡。", sp: "¿Está el piso al lado de un quiosco? Allí está el piso." },
             { ch: "Elisa，妳丈夫在哪裡？他在法國出差。", sp: "Elisa, ¿dónde está tu marido? Está de viaje de negocios por Francia." },
             { ch: "明天他在巴黎有一個會議。", sp: "Mañana tiene una reunión en París." },
-            { ch: "你們現在住在馬德里嗎？不，我們在薩拉曼卡買了一棟別墅。", sp: "¿Vivís en Madrid ahora? No, mi marido y yo compramos un chalé en Salamanca." },
+            { ch: "你們現在住在馬德里嗎？不，我們在薩拉曼卡買了一棟別墅。", sp: "¿Vivís en Madrid now? No, mi marido y yo compramos un chalé en Salamanca." },
             { ch: "離市中心有點遠，但在一個非常安靜的區域。", sp: "Está un poco lejos del centro, pero está en una zona muy tranquila." },
             { ch: "手機在哪裡？手機在桌子上。", sp: "¿Dónde está el móvil? El móvil está encima de la mesa." },
             { ch: "你父親在哪裡工作？我父親在一所學校工作。", sp: "¿Dónde trabaja tu padre? Mi padre trabaja en una escuela." }
@@ -90,7 +87,7 @@
             { ch: "學院裡有多少學生？大約有 75 名學生。", sp: "Hay unos setenta y cinco alumnos en nuestra academia." },
             { ch: "哥雅街有一間咖啡廳。在超市旁邊。", sp: "Hay una cafetería en la calle Goya. La cafetería está al lado del supermercado." },
             { ch: "巴勃羅是一位親切的老師。", sp: "Pablo es un profesor amable." },
-            { ch: "我班上大約有 30 名學生。", sp: "Hay unos treinta estudiantes en mi clase." },
+            { ch: "我班上大約有 30 名學生。", sp: "Hay unos treinta estudiantes in my clase." },
             { ch: "西班牙人很親切。", sp: "Los españoles son amables." },
             { ch: "狗在這裡。貓在那裡。背包在那裡（遠處）。", sp: "El perro está aquí. El gato está ahí. La mochila está allí." },
             { ch: "教室在哪裡？在走廊盡頭。", sp: "¿Dónde está el aula? Está al final del pasillo." },
@@ -100,7 +97,7 @@
             { ch: "我有兩個室友。我住在二樓（西班牙一樓）。", sp: "Tengo dos compañeras de piso. Vivo en la primera planta." },
             { ch: "是一間附家具的公寓嗎？是的。", sp: "¿Es un piso amueblado? Sí." }
         ],
-        "第 7 課：Ellos son mis parents (他們是我的父母)": [
+        "第 7 課：Ellos son mis padres (他們是我的父母)": [
             { ch: "年長的是我的祖父母。他們是誰？", sp: "Los mayores son mis abuelos. ¿Quiénes son?" },
             { ch: "他們是我的父母，那邊那些是我的叔伯舅姨。", sp: "Ellos son mis padres y aquellos son mis tíos." },
             { ch: "你有兄弟姊妹嗎？有。這是我的哥哥，這是我的妹妹。", sp: "¿Tienes hermanos? Sí. Este es mi hermano mayor y esta es mi hermana menor." },
@@ -117,8 +114,8 @@
             { ch: "Antonio 比我大。我比 Antonio 小。", sp: "Antonio es mayor que yo. Yo soy menor que Antonio." },
             { ch: "這幅畫比那幅好。這本書比那本差。", sp: "Este cuadro es mejor que aquel. Este libro es peor que aquel." },
             { ch: "那個高個子男人是誰？是我堂兄弟。在他右邊的是我叔叔。", sp: "¿Quién es el hombre alto? Es mi primo. A la derecha de mi primo está mi tío." },
-            { ch: "那些女人是誰？", sp: "¿Quiénes son las women?" },
-            { ch: "那位年長的女性是我嬸嬸。她在我的堂姊妹左邊。", sp: "La woman mayor es mi tía. Está a la izquierda de mi prima." },
+            { ch: "那些女人是誰？", sp: "¿Quiénes son las mujeres?" },
+            { ch: "那位年長的女性是我嬸嬸。她在我的堂姊妹左邊。", sp: "La mujer mayor es mi tía. Está a la izquierda de mi prima." },
             { ch: "你有幾個兄弟姊妹？", sp: "¿Cuántos hermanos tienes?" },
             { ch: "你哥哥結婚了嗎？是的，他結婚了，有一個兒子。他們住在這附近。", sp: "¿Está casado tu hermano mayor? Sí, está casado y tiene un hijo. Viven cerca de aquí." },
             { ch: "那妳妹妹呢？她單身，但有男朋友。", sp: "¿Y tu hermana menor? Está soltera, pero tiene novio." }
@@ -128,7 +125,7 @@
             { ch: "好主意。你知道怎麼去那裡以及我們住哪裡嗎？", sp: "Buena idea. ¿Sabes cómo llegar allí y dónde nos alojamos?" },
             { ch: "我不怎麼了解那個村莊，但我們可以上網搜尋。", sp: "No conozco muy bien ese pueblo, pero podemos buscar por internet." },
             { ch: "你知道哪裡可以租車嗎？是的，我認識這附近的一家租車店。", sp: "¿Sabes dónde podemos alquilar un coche? Sí, conozco un alquiler de coches cerca de aquí." },
-            { ch: "你認識那個女人嗎？是的，她是 Emilia，Enrique 的女朋友。", sp: "¿Conoces a esa mujer? Sí, es Emilia, la novia de Enrique." },
+            { ch: "你認識那個女人嗎？是的，她是 Emilia，Enrique 的女朋友。", sp: "¿Conoces a esa woman? Sí, es Emilia, la novia de Enrique." },
             { ch: "她是台灣人，但她西班牙文和法文都說得很好。", sp: "Es taiwanesa, pero sabe muy bien español y francés." },
             { ch: "她和 Enrique 是辦公室同事。", sp: "Enrique y ella son compañeros de oficina." },
             { ch: "你知道 Enrique 有個女兒嗎？我不知道。", sp: "¿Sabes que Enrique tiene una hija? No lo sé." },
@@ -151,32 +148,27 @@
     let currentQuestions = [];
     let currentIndex = 0;
     let currentScore = 0;
-    let attemptCount = 0; // 只保留一個計數變數
+    let attemptCount = 0;
 
-    // --- 語音辨識邏輯 ---
+    // --- 語音辨識 ---
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     let recognition;
 
     if (SpeechRecognition) {
         recognition = new SpeechRecognition();
         recognition.lang = 'es-ES';
-        recognition.continuous = false; 
-        recognition.interimResults = false;
-
         recognition.onresult = (event) => {
             const transcript = event.results[0][0].transcript;
             document.getElementById('user-input').value = transcript;
             checkAnswer();
         };
-
         recognition.onend = () => {
             const btn = document.getElementById('mic-btn');
             btn.classList.remove('listening');
             btn.innerText = "🎤 按下開始口說";
         };
-
-        recognition.onerror = (event) => {
-            alert("語音辨識錯誤: " + event.error);
+        recognition.onerror = (e) => {
+            console.error(e.error);
             const btn = document.getElementById('mic-btn');
             btn.classList.remove('listening');
             btn.innerText = "🎤 按下開始口說";
@@ -184,14 +176,14 @@
     }
 
     function startListening() {
-        if (!recognition) return alert("您的瀏覽器不支援口說辨識");
+        if (!recognition) return alert("不支援口說");
         recognition.start();
         const btn = document.getElementById('mic-btn');
         btn.classList.add('listening');
-        btn.innerText = "正在聽...請說西文";
+        btn.innerText = "正在聽...";
     }
 
-    // --- 基礎邏輯 ---
+    // --- 主邏輯 ---
     function initMenu() {
         const menu = document.getElementById('lesson-menu');
         menu.innerHTML = "";
@@ -215,7 +207,7 @@
     }
 
     function showQuestion() {
-        attemptCount = 0; // 重置計數
+        attemptCount = 0; 
         const q = currentQuestions[currentIndex];
         document.getElementById('chinese-text').innerText = q.ch;
         const userInput = document.getElementById('user-input');
@@ -238,8 +230,8 @@
         const userValue = userInput.value.trim();
         const checkBtn = document.getElementById('check-btn');
         const feedback = document.getElementById('feedback');
-        
         const correctAnswer = currentQuestions[currentIndex].sp;
+        
         const userClean = userValue.toLowerCase().replace(/[¿?.,!]/g, "").normalize("NFD").replace(/[\u0300-\u036f]/g, "");
         const correctClean = correctAnswer.toLowerCase().replace(/[¿?.,!]/g, "").normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
@@ -250,7 +242,6 @@
             showFullAnswer(correctAnswer);
             checkBtn.disabled = true;
             checkBtn.innerText = "已完成";
-            attemptCount = 0;
         } else {
             attemptCount++;
             if (attemptCount === 1) {
@@ -260,10 +251,9 @@
                 checkBtn.innerText = "顯示正確答案";
                 checkBtn.style.backgroundColor = "#FF9500";
             } else {
-                feedback.innerText = "別灰心，正確答案在這裡：";
+                feedback.innerText = "別灰心，正確答案如下：";
                 feedback.style.color = "#5856D6";
                 showFullAnswer(correctAnswer);
-                userInput.style.borderColor = "#5856D6";
                 checkBtn.disabled = true;
                 checkBtn.innerText = "請按下一題";
                 checkBtn.style.backgroundColor = "var(--secondary)";
@@ -307,16 +297,17 @@
     function resetCheckBtn() {
         const checkBtn = document.getElementById('check-btn');
         const userInput = document.getElementById('user-input');
-        checkBtn.disabled = false;
-        checkBtn.innerText = "檢查答案";
-        checkBtn.style.backgroundColor = "var(--primary)";
-        userInput.style.borderColor = "#ddd";
-        document.getElementById('feedback').innerText = "";
-        attemptCount = 0; // 補正時重置計數，讓它可以重新檢查
+        if (checkBtn.innerText !== "已完成") {
+            checkBtn.disabled = false;
+            checkBtn.innerText = "檢查答案";
+            checkBtn.style.backgroundColor = "var(--primary)";
+            userInput.style.borderColor = "#ddd";
+            document.getElementById('feedback').innerText = "";
+            attemptCount = 0; 
+        }
     }
 
     initMenu();
 </script>
 </body>
 </html>
-
