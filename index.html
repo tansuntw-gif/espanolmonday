@@ -227,31 +227,54 @@ let currentQuestions = [];
         userInput.focus();
     }
 
-    function checkAnswer() {
-        const userInput = document.getElementById('user-input');
-        const userValue = userInput.value.trim();
-        const correctAnswer = currentQuestions[currentIndex].sp;
-        const userClean = userValue.toLowerCase().replace(/[¿?.,!]/g, "").normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-        const correctClean = correctAnswer.toLowerCase().replace(/[¿?.,!]/g, "").normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+function checkAnswer() {
+    const userInput = document.getElementById('user-input');
+    const userValue = userInput.value.trim();
+    const checkBtn = document.getElementById('check-btn'); // 取得檢查按鈕
+    
+    if (!userValue) return; // 如果沒輸入文字就不執行
 
-        const feedback = document.getElementById('feedback');
-        const ansDisp = document.getElementById('ans-display');
+    const correctAnswer = currentQuestions[currentIndex].sp;
+    const userClean = userValue.toLowerCase().replace(/[¿?.,!]/g, "").normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    const correctClean = correctAnswer.toLowerCase().replace(/[¿?.,!]/g, "").normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
-        if (userClean === correctClean) {
-            currentScore += 10;
-            feedback.innerText = "¡Muy bien! 正確！";
-            feedback.style.color = "var(--success)";
-            ansDisp.innerHTML = correctAnswer + " 🔊";
-            ansDisp.style.display = "block";
-            userInput.style.borderColor = "var(--success)";
-            speak(correctAnswer);
-        } else {
-            feedback.innerText = "再試一次！";
-            feedback.style.color = "var(--danger)";
-            userInput.style.borderColor = "var(--danger)";
-        }
+    const feedback = document.getElementById('feedback');
+    const ansDisp = document.getElementById('ans-display');
+
+    if (userClean === correctClean) {
+        // --- 答對時的邏輯 ---
+        currentScore += 10;
+        feedback.innerText = "¡Muy bien! 正確！";
+        feedback.style.color = "var(--success)";
+        
+        // 顯示正確答案（標註紅字重音）
+        const words = correctAnswer.split(' ');
+        ansDisp.innerHTML = words.map(word => /[áéíóúñÁÉÍÓÚÑ]/.test(word) ? `<span style="color:red">${word}</span>` : word).join(' ') + " 🔊";
+        ansDisp.style.display = "block";
+        
+        userInput.style.borderColor = "var(--success)";
+        
+        // 答對才禁用按鈕，防止重複加分
+        checkBtn.disabled = true;
+        checkBtn.innerText = "已完成";
+        
+        speak(correctAnswer);
+    } else {
+        // --- 答錯時的邏輯 ---
+        feedback.innerText = "拼字或口說有誤，請修改後再檢查一次！";
+        feedback.style.color = "var(--danger)";
+        userInput.style.borderColor = "var(--danger)";
+        
+        // 確保按鈕是啟用的，讓使用者可以手動改字後再按一次
+        checkBtn.disabled = false;
+        checkBtn.innerText = "檢查答案";
+        
+        // 顯示提示
+        ansDisp.innerText = "點擊聽正確發音 🔊";
+        ansDisp.onclick = () => speak(correctAnswer);
+        ansDisp.style.display = "block";
     }
-
+}
     function nextQuestion() {
         if (currentIndex < currentQuestions.length - 1) {
             currentIndex++;
@@ -281,6 +304,7 @@ let currentQuestions = [];
 </script>
 </body>
 </html>
+
 
 
 
