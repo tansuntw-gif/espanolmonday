@@ -41,7 +41,7 @@
     </div>
     <div id="chinese-text">題目載入中...</div>
     
-    <input type="text" id="user-input" placeholder="請輸入或用說的..." autocomplete="off">
+<input type="text" id="user-input" placeholder="請輸入或用說的..." oninput="resetCheckBtn()">
     
     <button id="mic-btn" class="action-btn" style="background-color: var(--voice); color: white;" onclick="startListening()">
         🎤 按下開始口說
@@ -230,47 +230,52 @@ let currentQuestions = [];
 function checkAnswer() {
     const userInput = document.getElementById('user-input');
     const userValue = userInput.value.trim();
-    const checkBtn = document.getElementById('check-btn'); // 取得檢查按鈕
-    
-    if (!userValue) return; // 如果沒輸入文字就不執行
-
-    const correctAnswer = currentQuestions[currentIndex].sp;
-    const userClean = userValue.toLowerCase().replace(/[¿?.,!]/g, "").normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-    const correctClean = correctAnswer.toLowerCase().replace(/[¿?.,!]/g, "").normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-
+    const checkBtn = document.getElementById('check-btn');
     const feedback = document.getElementById('feedback');
     const ansDisp = document.getElementById('ans-display');
 
+    if (!userValue) return;
+
+    const correctAnswer = currentQuestions[currentIndex].sp;
+    
+    // 標準化比對 (去標點、去重音、轉小寫)
+    const userClean = userValue.toLowerCase().replace(/[¿?.,!]/g, "").normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    const correctClean = correctAnswer.toLowerCase().replace(/[¿?.,!]/g, "").normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
     if (userClean === correctClean) {
-        // --- 答對時的邏輯 ---
+        // --- 答對邏輯 ---
         currentScore += 10;
-        feedback.innerText = "¡Muy bien! 正確！";
-        feedback.style.color = "var(--success)";
         
-        // 顯示正確答案（標註紅字重音）
+        // 檢查是否完全吻合（包含重音符號）
+        const isPerfect = userValue.replace(/[¿?.,!]/g, "") === correctAnswer.replace(/[¿?.,!]/g, "");
+        
+        feedback.innerText = isPerfect ? "¡Perfecto! 全對！🌟" : "答對了！但要注意重音符號。";
+        feedback.style.color = isPerfect ? "var(--success)" : "#FF9500";
+        
+        // 顯示正確答案並高亮重音字母
         const words = correctAnswer.split(' ');
-        ansDisp.innerHTML = words.map(word => /[áéíóúñÁÉÍÓÚÑ]/.test(word) ? `<span style="color:red">${word}</span>` : word).join(' ') + " 🔊";
+        ansDisp.innerHTML = words.map(word => /[áéíóúñÁÉÍÓÚÑ]/.test(word) ? `<span style="color:red; font-weight:bold;">${word}</span>` : word).join(' ') + " 🔊";
         ansDisp.style.display = "block";
         
         userInput.style.borderColor = "var(--success)";
         
-        // 答對才禁用按鈕，防止重複加分
+        // 答對後才鎖定按鈕與輸入
         checkBtn.disabled = true;
         checkBtn.innerText = "已完成";
-        
         speak(correctAnswer);
+        
     } else {
-        // --- 答錯時的邏輯 ---
-        feedback.innerText = "拼字或口說有誤，請修改後再檢查一次！";
+        // --- 答錯邏輯 (補正模式) ---
+        feedback.innerText = "答案不完全正確，請修改紅框處後再按一次檢查！";
         feedback.style.color = "var(--danger)";
         userInput.style.borderColor = "var(--danger)";
         
-        // 確保按鈕是啟用的，讓使用者可以手動改字後再按一次
+        // 這裡不鎖定 checkBtn，讓它可以被再次點擊
         checkBtn.disabled = false;
-        checkBtn.innerText = "檢查答案";
-        
-        // 顯示提示
-        ansDisp.innerText = "點擊聽正確發音 🔊";
+        checkBtn.innerText = "再次檢查";
+
+        // 顯示提示：告訴使用者正確答案的開頭或長度 (輔助功能)
+        ansDisp.innerText = `提示：這句話以 "${correctAnswer.substring(0, 3)}..." 開頭 🔊`;
         ansDisp.onclick = () => speak(correctAnswer);
         ansDisp.style.display = "block";
     }
@@ -300,6 +305,20 @@ function checkAnswer() {
         speak(currentQuestions[currentIndex].sp);
     }
 
+    function resetCheckBtn() {
+    const checkBtn = document.getElementById('check-btn');
+    const userInput = document.getElementById('user-input');
+    
+    // 只要偵測到打字補正，就把按鈕恢復成原始狀態
+    checkBtn.disabled = false;
+    checkBtn.innerText = "檢查答案";
+    
+    // 把紅色的錯誤邊框恢復成一般顏色
+    userInput.style.borderColor = "#ddd"; 
+    
+    // 清除「再試一次」的錯誤提示訊息（選用，增加體驗）
+    document.getElementById('feedback').innerText = "";
+    }
     initMenu();
 </script>
 </body>
