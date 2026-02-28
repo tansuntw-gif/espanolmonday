@@ -159,6 +159,7 @@ let currentQuestions = [];
     if (SpeechRecognition) {
         recognition = new SpeechRecognition();
         recognition.lang = 'es-ES'; // 西班牙口音
+        recognition.continuous = false; 
         recognition.interimResults = false;
 
         recognition.onresult = (event) => {
@@ -173,8 +174,12 @@ let currentQuestions = [];
             btn.innerText = "🎤 按下開始口說";
         };
 
-        recognition.onerror = () => {
-            alert("口說辨識出錯，請檢查權限或網路。");
+        recognition.onerror = (event) => {
+    let message = "語音辨識錯誤: " + event.error;
+    if (event.error === 'not-allowed') message = "請在瀏覽器設定中允許麥克風權限！";
+    if (event.error === 'network') message = "網路連線異常，語音辨識需要網路。";
+    alert(message);
+    resetMicBtn();
         };
     }
 
@@ -276,6 +281,7 @@ let currentQuestions = [];
 </script>
 </body>
 </html>
+
 
 
 
