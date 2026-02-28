@@ -3,55 +3,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>西語學習夥伴 v2</title>
+    <title>西語造句挑戰</title>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background-color: #f0f2f5; }
-        .card { width: 320px; padding: 40px; background: white; border-radius: 25px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); text-align: center; }
-        .spanish { font-size: 52px; color: #007AFF; margin-bottom: 5px; font-weight: bold; cursor: pointer; }
-        .spanish:hover { color: #0056b3; }
-        .hint { font-size: 12px; color: #999; margin-bottom: 20px; }
-        .chinese { font-size: 26px; color: #444; margin-bottom: 40px; }
-        button { background: #FF9500; color: white; border: none; padding: 18px 40px; border-radius: 15px; font-size: 20px; font-weight: bold; cursor: pointer; width: 100%; transition: 0.2s; }
-        button:active { transform: scale(0.98); background: #e68600; }
+        body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; background-color: #f4f7f9; }
+        .card { width: 90%; max-width: 400px; padding: 30px; background: white; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; }
+        .question { font-size: 20px; color: #666; margin-bottom: 20px; }
+        .answer-box { min-height: 120px; display: flex; flex-direction: column; justify-content: center; align-items: center; margin-bottom: 20px; border: 2px dashed #ddd; border-radius: 15px; padding: 10px; }
+        .spanish { font-size: 28px; color: #007AFF; font-weight: bold; cursor: pointer; display: none; }
+        .hint { color: #999; font-size: 14px; }
+        .btn-group { display: flex; flex-direction: column; gap: 10px; }
+        button { border: none; padding: 15px; border-radius: 12px; font-size: 18px; cursor: pointer; transition: 0.2s; font-weight: bold; }
+        .btn-show { background: #34C759; color: white; }
+        .btn-next { background: #FF9500; color: white; }
+        button:active { transform: scale(0.98); }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <div id="word" class="spanish" onclick="speak()">Hola</div>
-    <div class="hint">(點擊單字聽發音 🔊)</div>
-    <div id="translation" class="chinese">你好</div>
-    <button onclick="nextWord()">下一個單字</button>
+    <div class="question">請翻譯這句話：</div>
+    <div id="chinese-text" style="font-size: 24px; font-weight: bold; margin-bottom: 20px;">這是我的家族照。</div>
+    
+    <div class="answer-box">
+        <div id="hint-text" class="hint">思考一下，點擊下方按鈕看答案</div>
+        <div id="spanish-text" class="spanish" onclick="speak()"></div>
+    </div>
+
+    <div class="btn-group">
+        <button class="btn-show" onclick="showAnswer()">顯示答案並發音 🔊</button>
+        <button class="btn-next" onclick="nextQuiz()">下一題</button>
+    </div>
 </div>
 
 <script>
-    const vocabulary = [
-        { sp: "Hola", ch: "你好" },
-        { sp: "Gracias", ch: "謝謝" },
-        { sp: "Buenos días", ch: "早安" },
-        { sp: "Te amo", ch: "我愛你" },
-        { sp: "La cuenta, por favor", ch: "請給我帳單" }
+    const quizData = [
+        { ch: "這是我的家族照。", sp: "Esta es la foto de mi familia." },
+        { ch: "長輩們是我的祖父母。", sp: "Los mayores son mis abuelos." },
+        { ch: "他們是我的父母。", sp: "Ellos son mis padres." },
+        { ch: "那些是我的叔伯嬸姨。", sp: "Aquellos son mis tíos." },
+        { ch: "你有兄弟姊妹嗎？", sp: "¿Tienes hermanos?" },
+        { ch: "這位是大衛，我的丈夫。", sp: "Este es David, mi marido." },
+        { ch: "那個男孩是你的兒子嗎？", sp: "¿Aquel chico es tu hijo?" },
+        { ch: "他很高。", sp: "Es muy alto." },
+        { ch: "他五歲，而且很調皮。", sp: "Tiene cinco años y es travieso." },
+        { ch: "阿爾貝托比米格爾矮。", sp: "Alberto es más bajo que Miguel." }
     ];
 
     let currentIndex = 0;
 
-    // 發音功能邏輯
-    function speak() {
-        const text = document.getElementById('word').innerText;
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = 'es-ES'; // 設定為西班牙語發音
-        utterance.rate = 0.9;     // 語速稍微放慢一點點
-        window.speechSynthesis.speak(utterance);
+    function showAnswer() {
+        document.getElementById('spanish-text').style.display = 'block';
+        document.getElementById('hint-text').style.display = 'none';
+        document.getElementById('spanish-text').innerText = quizData[currentIndex].sp;
+        speak();
     }
 
-    // 切換單字邏輯
-    function nextWord() {
-        currentIndex = (currentIndex + 1) % vocabulary.length;
-        document.getElementById('word').innerText = vocabulary[currentIndex].sp;
-        document.getElementById('translation').innerText = vocabulary[currentIndex].ch;
-        
-        // 切換時可以選擇要不要自動發音，若要請取消下一行的註解：
-        // speak();
+    function nextQuiz() {
+        currentIndex = (currentIndex + 1) % quizData.length;
+        document.getElementById('chinese-text').innerText = quizData[currentIndex].ch;
+        document.getElementById('spanish-text').style.display = 'none';
+        document.getElementById('hint-text').style.display = 'block';
+    }
+
+    function speak() {
+        const text = quizData[currentIndex].sp;
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'es-ES';
+        utterance.rate = 0.8;
+        window.speechSynthesis.speak(utterance);
     }
 </script>
 
