@@ -227,6 +227,9 @@ let currentQuestions = [];
         userInput.focus();
     }
 
+// 建立一個變數來紀錄目前這題答錯了幾次
+let attemptCount = 0;
+
 function checkAnswer() {
     const userInput = document.getElementById('user-input');
     const userValue = userInput.value.trim();
@@ -234,51 +237,61 @@ function checkAnswer() {
     const feedback = document.getElementById('feedback');
     const ansDisp = document.getElementById('ans-display');
 
-    if (!userValue) return;
+    if (!userValue && attemptCount === 0) return; // 第一下沒輸入不執行
 
     const correctAnswer = currentQuestions[currentIndex].sp;
     
-    // 標準化比對 (去標點、去重音、轉小寫)
+    // 標準化比對
     const userClean = userValue.toLowerCase().replace(/[¿?.,!]/g, "").normalize("NFD").replace(/[\u0300-\u036f]/g, "");
     const correctClean = correctAnswer.toLowerCase().replace(/[¿?.,!]/g, "").normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
     if (userClean === correctClean) {
-        // --- 答對邏輯 ---
+        // --- 情況 A：答對了 ---
         currentScore += 10;
-        
-        // 檢查是否完全吻合（包含重音符號）
-        const isPerfect = userValue.replace(/[¿?.,!]/g, "") === correctAnswer.replace(/[¿?.,!]/g, "");
-        
-        feedback.innerText = isPerfect ? "¡Perfecto! 全對！🌟" : "答對了！但要注意重音符號。";
-        feedback.style.color = isPerfect ? "var(--success)" : "#FF9500";
-        
-        // 顯示正確答案並高亮重音字母
-        const words = correctAnswer.split(' ');
-        ansDisp.innerHTML = words.map(word => /[áéíóúñÁÉÍÓÚÑ]/.test(word) ? `<span style="color:red; font-weight:bold;">${word}</span>` : word).join(' ') + " 🔊";
-        ansDisp.style.display = "block";
-        
-        userInput.style.borderColor = "var(--success)";
-        
-        // 答對後才鎖定按鈕與輸入
+        feedback.innerText = "¡Excelente! 答對了！";
+        feedback.style.color = "var(--success)";
+        showFullAnswer(correctAnswer); // 顯示完整答案的輔助函式
         checkBtn.disabled = true;
         checkBtn.innerText = "已完成";
-        speak(correctAnswer);
-        
     } else {
-        // --- 答錯邏輯 (補正模式) ---
-        feedback.innerText = "答案不完全正確，請修改紅框處後再按一次檢查！";
-        feedback.style.color = "var(--danger)";
-        userInput.style.borderColor = "var(--danger)";
-        
-        // 這裡不鎖定 checkBtn，讓它可以被再次點擊
-        checkBtn.disabled = false;
-        checkBtn.innerText = "再次檢查";
+        // --- 情況 B：答錯了 ---
+        attemptCount++; // 增加錯誤次數
 
-        // 顯示提示：告訴使用者正確答案的開頭或長度 (輔助功能)
-        ansDisp.innerText = `提示：這句話以 "${correctAnswer.substring(0, 3)}..." 開頭 🔊`;
-        ansDisp.onclick = () => speak(correctAnswer);
-        ansDisp.style.display = "block";
+        if (attemptCount === 1) {
+            // 第一次答錯：給予機會訂正
+            feedback.innerText = "答案不對喔，再試試看或是點擊「顯示答案」";
+            feedback.style.color = "var(--danger)";
+            userInput.style.borderColor = "var(--danger)";
+            checkBtn.innerText = "顯示正確答案"; // 更改按鈕文字提示
+        } else {
+            // 第二次按下（或多次答錯）：直接給答案
+            feedback.innerText = "別灰心，正確答案如下：";
+            feedback.style.color = "#5856D6"; // 用紫色表示揭曉答案
+            showFullAnswer(correctAnswer);
+            checkBtn.disabled = true;
+            checkBtn.innerText = "請按下一題";
+        }
     }
+}
+
+// 輔助函式：統一顯示正確答案的格式
+function showFullAnswer(text) {
+    const ansDisp = document.getElementById('ans-display');
+    const words = text.split(' ');
+    ansDisp.innerHTML = words.map(word => /[áéíóúñÁÉÍÓÚÑ]/.test(word) ? `<span style="color:red; font-weight:bold;">${word}</span>` : word).join(' ') + " 🔊";
+    ansDisp.style.display = "block";
+    speak(text);
+}
+
+// 別忘了在 showQuestion 裡面重置次數
+function showQuestion() {
+    attemptCount = 0; // 每一題開始時重置錯誤計數
+    // ... 其他原本 showQuestion 的代碼 ...
+    const checkBtn = document.getElementById('check-btn');
+    checkBtn.disabled = false;
+    checkBtn.innerText = "檢查答案";
+    // ...
+}
 }
     function nextQuestion() {
         if (currentIndex < currentQuestions.length - 1) {
@@ -323,6 +336,7 @@ function checkAnswer() {
 </script>
 </body>
 </html>
+
 
 
 
