@@ -237,36 +237,65 @@
     }
 
     // 4. 檢查答案
+    // 輔助函數：去除重音符號以進行比對
+    function removeAccents(str) {
+        return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    }
+
     function checkAnswer() {
         const userInput = document.getElementById('user-input');
-        const user = userInput.value.trim().toLowerCase().replace(/[¿?.,!]/g, "");
-        const correct = currentLesson[currentIndex].sp.toLowerCase().replace(/[¿?.,!]/g, "");
+        const rawUserValue = userInput.value.trim();
+        
+        // 正規化：轉小寫、去標點、去重音
+        const userClean = removeAccents(rawUserValue.toLowerCase().replace(/[¿?.,!]/g, ""));
+        const correctClean = removeAccents(currentLesson[currentIndex].sp.toLowerCase().replace(/[¿?.,!]/g, ""));
         
         const feedback = document.getElementById('feedback');
         const ansDisp = document.getElementById('ans-display');
         const checkBtn = document.getElementById('check-btn');
 
-        if (user === correct) {
+        if (userClean === correctClean) {
+            // 判定正確
             currentScore += 10;
-            feedback.innerText = "¡Correcto! 🌟";
-            feedback.style.color = "var(--success)";
-            userInput.style.borderColor = "var(--success)";
             
-            // 答對了，顯示答案並禁用按鈕，防止重複加分
-            ansDisp.innerText = currentLesson[currentIndex].sp + " 🔊";
+            // 檢查是否有重音打錯（原始字串比對）
+            const isAccentsPerfect = rawUserValue.replace(/[¿?.,!]/g, "") === currentLesson[currentIndex].sp.replace(/[¿?.,!]/g, "");
+            
+            if (!isAccentsPerfect) {
+                feedback.innerText = "答對了！但要注意重音符號：";
+                feedback.style.color = "#FF9500"; // 橘色提醒
+            } else {
+                feedback.innerText = "¡Perfecto! 全對！🌟";
+                feedback.style.color = "var(--success)";
+            }
+
+            // 處理顯示答案：將含有特殊符號的單字變紅
+            const words = currentLesson[currentIndex].sp.split(' ');
+            const highlightedAns = words.map(word => {
+                // 如果單字包含特殊字元，則標紅
+                if (/[áéíóúñÁÉÍÓÚÑ]/.test(word)) {
+                    return `<span style="color: red; font-weight: bold;">${word}</span>`;
+                }
+                return word;
+            }).join(' ');
+
+            userInput.style.borderColor = "var(--success)";
+            ansDisp.innerHTML = highlightedAns + " 🔊";
             ansDisp.style.display = "block";
             checkBtn.disabled = true;
             checkBtn.innerText = "已完成";
             speak();
         } else {
-            feedback.innerText = "不完全正確，再試試看！";
+            // 判定錯誤
+            feedback.innerText = "拼字有誤，再試試看！";
             feedback.style.color = "var(--danger)";
             userInput.style.borderColor = "var(--danger)";
             
-            // 【修正點】答錯時不禁用按鈕，但提示使用者可以看答案
             ansDisp.innerText = "查看正確答案？ (點擊此處) 🔊";
             ansDisp.onclick = function() {
-                ansDisp.innerText = currentLesson[currentIndex].sp + " 🔊";
+                // 錯誤時查看答案也顯示紅字提醒
+                const words = currentLesson[currentIndex].sp.split(' ');
+                ansDisp.innerHTML = words.map(word => /[áéíóúñÁÉÍÓÚÑ]/.test(word) ? `<span style="color: red;">${word}</span>` : word).join(' ') + " 🔊";
                 speak();
             };
             ansDisp.style.display = "block";
@@ -300,5 +329,6 @@
 
 </body>
 </html>
+
 
 
