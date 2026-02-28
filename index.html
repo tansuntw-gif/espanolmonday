@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>西語學習夥伴 v2</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background-color: #f0f2f5; }
+        .card { width: 320px; padding: 40px; background: white; border-radius: 25px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); text-align: center; }
+        .spanish { font-size: 52px; color: #007AFF; margin-bottom: 5px; font-weight: bold; cursor: pointer; }
+        .spanish:hover { color: #0056b3; }
+        .hint { font-size: 12px; color: #999; margin-bottom: 20px; }
+        .chinese { font-size: 26px; color: #444; margin-bottom: 40px; }
+        button { background: #FF9500; color: white; border: none; padding: 18px 40px; border-radius: 15px; font-size: 20px; font-weight: bold; cursor: pointer; width: 100%; transition: 0.2s; }
+        button:active { transform: scale(0.98); background: #e68600; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <div id="word" class="spanish" onclick="speak()">Hola</div>
+    <div class="hint">(點擊單字聽發音 🔊)</div>
+    <div id="translation" class="chinese">你好</div>
+    <button onclick="nextWord()">下一個單字</button>
+</div>
+
+<script>
+    const vocabulary = [
+        { sp: "Hola", ch: "你好" },
+        { sp: "Gracias", ch: "謝謝" },
+        { sp: "Buenos días", ch: "早安" },
+        { sp: "Te amo", ch: "我愛你" },
+        { sp: "La cuenta, por favor", ch: "請給我帳單" }
+    ];
+
+    let currentIndex = 0;
+
+    // 發音功能邏輯
+    function speak() {
+        const text = document.getElementById('word').innerText;
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'es-ES'; // 設定為西班牙語發音
+        utterance.rate = 0.9;     // 語速稍微放慢一點點
+        window.speechSynthesis.speak(utterance);
+    }
+
+    // 切換單字邏輯
+    function nextWord() {
+        currentIndex = (currentIndex + 1) % vocabulary.length;
+        document.getElementById('word').innerText = vocabulary[currentIndex].sp;
+        document.getElementById('translation').innerText = vocabulary[currentIndex].ch;
+        
+        // 切換時可以選擇要不要自動發音，若要請取消下一行的註解：
+        // speak();
+    }
+</script>
+
+</body>
+</html>
