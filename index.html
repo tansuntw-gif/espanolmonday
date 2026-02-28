@@ -41,7 +41,29 @@
         <div id="score">得分: 0</div>
     </div>
     <div id="chinese-text">題目載入中...</div>
+
+    input[type="text"] {
+    width: 100%;
+    padding: 15px;
+    font-size: 18px;
+    border: 2px solid #ddd;
+    border-radius: 12px;
+    margin-bottom: 15px;
+    text-align: left; /* 改為靠左對齊，方便觀察長句子的結尾 */
+    outline: none;
+    box-sizing: border-box;
     
+    /* 新增以下屬性解決長文字問題 */
+    overflow-x: auto; /* 允許水平捲動 */
+    white-space: nowrap; /* 確保文字不換行但可往後延伸 */
+    transition: 0.3s;
+}
+
+/* 當輸入框被點擊時，增加一點高度感 */
+input[type="text"]:focus {
+    border-color: var(--primary);
+    background-color: #fafafa;
+}
     <input type="text" id="user-input" placeholder="請輸入或用說的..." oninput="handleTyping()">
     
     <button id="mic-btn" class="action-btn" style="background-color: var(--voice); color: white;" onclick="startListening()">
@@ -229,5 +251,6 @@
 </script>
 </body>
 </html>
+
 
 
