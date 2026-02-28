@@ -208,40 +208,69 @@
         showQuestion();
     }
 
-    // 3. 顯示題目
+   // 3. 顯示題目（新增：輸入框監聽器）
     function showQuestion() {
         const q = currentLesson[currentIndex];
         document.getElementById('chinese-text').innerText = q.ch;
-        document.getElementById('user-input').value = "";
+        
+        const userInput = document.getElementById('user-input');
+        userInput.value = "";
+        userInput.style.borderColor = "#ddd"; // 恢復邊框顏色
+        
         document.getElementById('feedback').innerText = "";
         document.getElementById('ans-display').style.display = "none";
-        document.getElementById('check-btn').disabled = false;
+        
+        const checkBtn = document.getElementById('check-btn');
+        checkBtn.disabled = false;
+        checkBtn.innerText = "檢查答案";
+
         document.getElementById('progress').innerText = `${currentIndex + 1} / ${currentLesson.length}`;
         document.getElementById('score').innerText = `得分: ${currentScore}`;
-        document.getElementById('user-input').focus();
+        userInput.focus();
+
+        // 【修正點】監聽輸入事件：當使用者打字時，重新啟用按鈕
+        userInput.oninput = function() {
+            checkBtn.disabled = false;
+            checkBtn.innerText = "檢查答案";
+            userInput.style.borderColor = "#007AFF"; 
+        };
     }
 
     // 4. 檢查答案
     function checkAnswer() {
-        const user = document.getElementById('user-input').value.trim().toLowerCase().replace(/[¿?.,!]/g, "");
+        const userInput = document.getElementById('user-input');
+        const user = userInput.value.trim().toLowerCase().replace(/[¿?.,!]/g, "");
         const correct = currentLesson[currentIndex].sp.toLowerCase().replace(/[¿?.,!]/g, "");
         
         const feedback = document.getElementById('feedback');
         const ansDisp = document.getElementById('ans-display');
+        const checkBtn = document.getElementById('check-btn');
 
         if (user === correct) {
             currentScore += 10;
             feedback.innerText = "¡Correcto! 🌟";
             feedback.style.color = "var(--success)";
+            userInput.style.borderColor = "var(--success)";
+            
+            // 答對了，顯示答案並禁用按鈕，防止重複加分
+            ansDisp.innerText = currentLesson[currentIndex].sp + " 🔊";
+            ansDisp.style.display = "block";
+            checkBtn.disabled = true;
+            checkBtn.innerText = "已完成";
+            speak();
         } else {
-            feedback.innerText = "再試試看！";
+            feedback.innerText = "不完全正確，再試試看！";
             feedback.style.color = "var(--danger)";
+            userInput.style.borderColor = "var(--danger)";
+            
+            // 【修正點】答錯時不禁用按鈕，但提示使用者可以看答案
+            ansDisp.innerText = "查看正確答案？ (點擊此處) 🔊";
+            ansDisp.onclick = function() {
+                ansDisp.innerText = currentLesson[currentIndex].sp + " 🔊";
+                speak();
+            };
+            ansDisp.style.display = "block";
         }
-        
-        ansDisp.innerText = currentLesson[currentIndex].sp + " 🔊";
-        ansDisp.style.display = "block";
-        document.getElementById('check-btn').disabled = true;
-        speak();
     }
 
     // 5. 下一題
@@ -271,4 +300,5 @@
 
 </body>
 </html>
+
 
