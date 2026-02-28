@@ -230,6 +230,9 @@ let currentQuestions = [];
 // 建立一個變數來紀錄目前這題答錯了幾次
 let attemptCount = 0;
 
+// 請確保在 script 的最上方定義這個變數
+let attemptCount = 0; 
+
 function checkAnswer() {
     const userInput = document.getElementById('user-input');
     const userValue = userInput.value.trim();
@@ -237,41 +240,59 @@ function checkAnswer() {
     const feedback = document.getElementById('feedback');
     const ansDisp = document.getElementById('ans-display');
 
-    if (!userValue && attemptCount === 0) return; // 第一下沒輸入不執行
-
     const correctAnswer = currentQuestions[currentIndex].sp;
     
-    // 標準化比對
+    // 1. 標準化處理（用於比對內容）
     const userClean = userValue.toLowerCase().replace(/[¿?.,!]/g, "").normalize("NFD").replace(/[\u0300-\u036f]/g, "");
     const correctClean = correctAnswer.toLowerCase().replace(/[¿?.,!]/g, "").normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
-    if (userClean === correctClean) {
+    // 2. 核心邏輯判斷
+    if (userClean === correctClean && userValue !== "") {
         // --- 情況 A：答對了 ---
         currentScore += 10;
-        feedback.innerText = "¡Excelente! 答對了！";
+        feedback.innerText = "¡Excelente! 答對了！🌟";
         feedback.style.color = "var(--success)";
-        showFullAnswer(correctAnswer); // 顯示完整答案的輔助函式
+        showFullAnswer(correctAnswer); 
+        
         checkBtn.disabled = true;
         checkBtn.innerText = "已完成";
+        attemptCount = 0; // 重置計數
     } else {
         // --- 情況 B：答錯了 ---
-        attemptCount++; // 增加錯誤次數
+        attemptCount++; 
 
         if (attemptCount === 1) {
-            // 第一次答錯：給予機會訂正
-            feedback.innerText = "答案不對喔，再試試看或是點擊「顯示答案」";
+            // 第一次答錯：警告並要求修正，或準備揭曉
+            feedback.innerText = "拼字或口說有誤！請修正，或再按一次顯示答案。";
             feedback.style.color = "var(--danger)";
             userInput.style.borderColor = "var(--danger)";
-            checkBtn.innerText = "顯示正確答案"; // 更改按鈕文字提示
+            
+            checkBtn.innerText = "顯示正確答案"; // 關鍵：改變按鈕文字
+            checkBtn.style.backgroundColor = "#FF9500"; // 變成橘色提醒
         } else {
-            // 第二次按下（或多次答錯）：直接給答案
-            feedback.innerText = "別灰心，正確答案如下：";
-            feedback.style.color = "#5856D6"; // 用紫色表示揭曉答案
-            showFullAnswer(correctAnswer);
+            // 第二次點擊（再次檢查）：直接給出答案
+            feedback.innerText = "別灰心，正確答案在這裡：";
+            feedback.style.color = "#5856D6"; 
+            
+            showFullAnswer(correctAnswer); // 顯示答案與發音
+            
+            userInput.style.borderColor = "#5856D6";
             checkBtn.disabled = true;
             checkBtn.innerText = "請按下一題";
+            checkBtn.style.backgroundColor = "var(--secondary)";
+            attemptCount = 0; // 重置計數
         }
     }
+}
+
+// 輔助函式：確保正確答案的顯示與發音
+function showFullAnswer(text) {
+    const ansDisp = document.getElementById('ans-display');
+    const words = text.split(' ');
+    // 高亮重音符號
+    ansDisp.innerHTML = words.map(word => /[áéíóúñÁÉÍÓÚÑ]/.test(word) ? `<span style="color:red; font-weight:bold;">${word}</span>` : word).join(' ') + " 🔊";
+    ansDisp.style.display = "block";
+    speak(text);
 }
 
 // 輔助函式：統一顯示正確答案的格式
@@ -336,6 +357,7 @@ function showQuestion() {
 </script>
 </body>
 </html>
+
 
 
 
