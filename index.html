@@ -39,6 +39,8 @@
     </div>
     <div id="chinese-text">題目載入中...</div>
     <input type="text" id="user-input" placeholder="請輸入西文..." autocomplete="off">
+       <button id="mic-btn" class="action-btn" style="background-color: #5856D6; color: white; margin-top: 10px;" onclick="startListening()">
+      🎤 按下開始口說</button>
     <div id="feedback" style="margin-bottom:10px; font-weight:bold;"></div>
     <div id="ans-display" class="ans-display" onclick="speakCurrent()"></div>
     <div class="btn-group">
@@ -241,11 +243,62 @@
     function speakCurrent() {
         speak(currentQuestions[currentIndex].sp);
     }
+    
+// 定義語音辨識物件
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+let recognition;
 
+if (SpeechRecognition) {
+    recognition = new SpeechRecognition();
+    recognition.lang = 'es-ES'; // 設定辨識語言為西班牙文
+    recognition.interimResults = false; // 是否顯示中間辨識結果
+    recognition.maxAlternatives = 1;
+
+    // 當辨識到聲音後的處理
+    recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        document.getElementById('user-input').value = transcript;
+        document.getElementById('mic-btn').innerText = "🎤 按下開始口說";
+        document.getElementById('mic-btn').style.backgroundColor = "#5856D6";
+        
+        // 自動觸發檢查答案（選用）
+        checkAnswer();
+    };
+
+    recognition.onerror = (event) => {
+        console.error("語音辨識錯誤:", event.error);
+        alert("語音辨識失敗，請檢查麥克風權限");
+        resetMicBtn();
+    };
+
+    recognition.onend = () => {
+        resetMicBtn();
+    };
+} else {
+    alert("您的瀏覽器不支援語音辨識功能，請使用 Chrome。");
+}
+
+function startListening() {
+    if (!recognition) return;
+    
+    // 變更按鈕狀態
+    const micBtn = document.getElementById('mic-btn');
+    micBtn.innerText = "Listening... (請說西文)";
+    micBtn.style.backgroundColor = "#FF3B30"; // 錄音中顯示紅色
+    
+    recognition.start();
+}
+
+function resetMicBtn() {
+    const micBtn = document.getElementById('mic-btn');
+    micBtn.innerText = "🎤 按下開始口說";
+    micBtn.style.backgroundColor = "#5856D6";
+}
     initMenu();
 </script>
 </body>
 </html>
+
 
 
 
