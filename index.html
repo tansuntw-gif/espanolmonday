@@ -3,53 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>西語學習大師 - 20課全集</title>
+    <title>西語學習大師 - 第5至8課</title>
     <style>
         :root { --primary: #007AFF; --secondary: #6c757d; --success: #34C759; --danger: #FF3B30; }
         body { font-family: -apple-system, sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
         .card { width: 90%; max-width: 450px; padding: 25px; background: white; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center; }
-        
-        /* 選單樣式 */
-        .menu-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 20px; max-height: 400px; overflow-y: auto; padding: 5px; }
-        .lesson-btn { background: white; border: 2px solid var(--primary); color: var(--primary); padding: 15px; border-radius: 12px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .menu-grid { display: grid; grid-template-columns: repeat(1, 1fr); gap: 10px; margin-top: 20px; max-height: 400px; overflow-y: auto; padding: 5px; }
+        .lesson-btn { background: white; border: 2px solid var(--primary); color: var(--primary); padding: 15px; border-radius: 12px; font-weight: bold; cursor: pointer; transition: 0.2s; text-align: left; }
         .lesson-btn:hover { background: var(--primary); color: white; }
-
-        /* 練習區樣式 */
         .quiz-container { display: none; }
         .stats-bar { display: flex; justify-content: space-between; font-size: 14px; color: #666; margin-bottom: 15px; }
-        #chinese-text { font-size: 22px; font-weight: bold; margin: 20px 0; min-height: 50px; color: #333; }
-        input[type="text"] { width: 100%; padding: 15px; font-size: 18px; border: 2px solid #ddd; border-radius: 12px; margin-bottom: 15px; text-align: center; outline: none; }
+        #chinese-text { font-size: 20px; font-weight: bold; margin: 20px 0; min-height: 50px; color: #333; line-height: 1.4; }
+        input[type="text"] { width: 100%; padding: 15px; font-size: 18px; border: 2px solid #ddd; border-radius: 12px; margin-bottom: 15px; text-align: center; outline: none; box-sizing: border-box; }
         input[type="text"]:focus { border-color: var(--primary); }
         .ans-display { font-size: 18px; color: var(--primary); font-weight: bold; margin-bottom: 15px; display: none; background: #eef7ff; padding: 10px; border-radius: 10px; cursor: pointer; }
-        
         button.action-btn { width: 100%; border: none; padding: 15px; border-radius: 12px; font-size: 18px; cursor: pointer; font-weight: bold; margin-bottom: 10px; }
         .btn-check { background: var(--primary); color: white; }
         .btn-next { background: var(--secondary); color: white; }
-        .btn-back { background: none; color: var(--secondary); font-size: 14px; text-decoration: underline; }
+        .btn-back { background: none; color: var(--secondary); font-size: 14px; text-decoration: underline; border: none; cursor: pointer; }
     </style>
 </head>
 <body>
 
 <div class="card" id="menu-screen">
     <h2 style="margin-top:0">選擇課程</h2>
-    <p style="color:#666">共 20 課，點擊開始練習</p>
-    <div class="menu-grid" id="lesson-menu">
-        </div>
+    <p style="color:#666">第 5 課至第 8 課</p>
+    <div class="menu-grid" id="lesson-menu"></div>
 </div>
 
 <div class="card quiz-container" id="quiz-screen">
     <div class="stats-bar">
-        <div id="current-lesson-name">Lesson 7</div>
-        <div id="progress">1 / 10</div>
+        <div id="current-lesson-name">載入中...</div>
+        <div id="progress">0 / 0</div>
         <div id="score">得分: 0</div>
     </div>
-    
     <div id="chinese-text">題目載入中...</div>
     <input type="text" id="user-input" placeholder="請輸入西文..." autocomplete="off">
-    
     <div id="feedback" style="margin-bottom:10px; font-weight:bold;"></div>
-    <div id="ans-display" class="ans-display" onclick="speak()"></div>
-
+    <div id="ans-display" class="ans-display" onclick="speakCurrent()"></div>
     <div class="btn-group">
         <button id="check-btn" class="action-btn btn-check" onclick="checkAnswer()">檢查答案</button>
         <button class="action-btn btn-next" onclick="nextQuestion()">下一題</button>
@@ -58,121 +49,79 @@
 </div>
 
 <script>
-    // --- 題庫資料區 (你可以在這裡持續增加到 20 課) ---
     const allLessons = {
-
-"第 5 課：¿Dónde está la estación? (車站在哪裡？)": [
-            // 05-101: 問路
+        "第 5 課：¿Dónde está la estación? (車站在哪裡？)": [
             { ch: "不好意思，普拉多博物館在哪裡？", sp: "Perdone, ¿dónde está el museo del Prado?" },
             { ch: "離這裡有一點遠。你得搭地鐵。", sp: "Está un poco lejos de aquí. Tienes que coger el metro." },
-            { ch: "地鐵站在哪裡？離這裡很近。就在書報攤對面。", sp: "¿Dónde está la estación de metro? Está cerca de aquí. Está enfrente del quiosco." },
+            { ch: "地鐵站在哪裡？離這裡很近。就在書報攤對面。", sp: "¿Dónde está la station de metro? Está cerca de aquí. Está enfrente del quiosco." },
             { ch: "非常感謝。 / 不客氣。", sp: "Muchas gracias. De nada." },
-            
-            // 05-102: 意外相遇
             { ch: "嗨，安東尼奧。真巧。你住在這附近嗎？", sp: "Hola, Antonio. Qué casualidad. ¿Vives cerca de aquí?" },
             { ch: "不，我在這裡是因為我和女朋友有約。", sp: "No, estoy aquí porque tengo una cita con mi novia." },
             { ch: "你現在住在哪裡？我住在合租公寓。公寓在索里亞街。", sp: "¿Dónde vives ahora? Vivo en un piso compartido. El piso está en la calle Zorrilla." },
-            
-            // 05-206: 情感狀態
             { ch: "我筋疲力竭，因為我有很多工作。", sp: "Estoy agotado porque tengo mucho trabajo." },
-            
-            // 05-204 & 05-302: 居住位置與方位練習
             { ch: "你來自哪裡？我來自馬德里。", sp: "¿De dónde eres tú? Yo soy de Madrid." },
             { ch: "你住在哪裡？我和朋友住在一間公寓裡。", sp: "¿Dónde vives? Vivo en un piso con mi amigo." },
             { ch: "公寓在哪裡？公寓在一家麵包店對面。", sp: "¿Dónde está el piso? El piso está enfrente de una panadería." },
             { ch: "麵包店在哪裡？它在教堂前面，廣場後面。", sp: "¿Dónde está la panadería? Está delante de la iglesia y detrás de la plaza." },
             { ch: "公寓在報攤旁邊嗎？公寓就在那裡。", sp: "¿Está el piso al lado de un quiosco? Allí está el piso." },
-            
-            // 05-401: Elisa 的近況與新家
             { ch: "Elisa，妳丈夫在哪裡？他在法國出差。", sp: "Elisa, ¿dónde está tu marido? Está de viaje de negocios por Francia." },
             { ch: "明天他在巴黎有一個會議。", sp: "Mañana tiene una reunión en París." },
             { ch: "你們現在住在馬德里嗎？不，我們在薩拉曼卡買了一棟別墅。", sp: "¿Vivís en Madrid ahora? No, mi marido y yo compramos un chalé en Salamanca." },
             { ch: "離市中心有點遠，但在一個非常安靜的區域。", sp: "Está un poco lejos del centro, pero está en una zona muy tranquila." },
-            
-            // 額外練習
             { ch: "手機在哪裡？手機在桌子上。", sp: "¿Dónde está el móvil? El móvil está encima de la mesa." },
-            { ch: "你父親在哪裡工作？我父親在一所學校工作。", sp: "¿Dónde trabaja tu padre? Mi padre trabaja en una escuela." }
+            { ch: "你父親在哪裡工作？我父親在一所學校工作。", sp: "¿Dónde trabaja tu padre? Mi padre trabaja en una school." }
         ],
-"第 6 課：Hay comedor en la facultad (學院裡有食堂)": [
-            // 06-101: 學院設施位置
+        "第 6 課：Hay comedor en la facultad (學院裡有食堂)": [
             { ch: "你知道圖書館在哪裡嗎？就在影印店旁邊。", sp: "¿Sabes dónde está la biblioteca? Está ahí, al lado de la tienda de fotocopias." },
             { ch: "學院裡有食堂或咖啡廳嗎？", sp: "¿Hay un comedor o una cafetería en la facultad?" },
-            { ch: "是的，這一層有一間咖啡廳和一個食堂。", sp: "Sí, hay una cafetería y un comedor en esta planta." },
+            { ch: "是的，這一層有一間咖啡廳和一個食堂。", sp: "Sí, hay una cafetería and un comedor en esta planta." },
             { ch: "一樓有什麼？有一些教室，秘書處也在那裡。", sp: "¿Qué hay en la primera planta? Hay unas aulas y la Secretaría está allí también." },
             { ch: "我明白了。非常感謝。", sp: "Ya veo. Muchas gracias." },
-
-            // 06-102: 教室與學生數量
             { ch: "學院裡有多少間教室？有 10 間教室。", sp: "¿Cuántas aulas hay en la academia? Hay diez aulas en la academia." },
-            { ch: "學院裡有多少學生？大約有 75 名學生。", sp: "¿Cuántos alumnos hay en la academia? Hay unos setenta y cinco alumnos en nuestra academia." },
-
-            // 06-204 & 06-205: 描述與位置
+            { ch: "學院裡有多少學生？大約有 75 名學生。", sp: "Hay unos setenta y cinco alumnos en nuestra academia." },
             { ch: "哥雅街有一間咖啡廳。在超市旁邊。", sp: "Hay una cafetería en la calle Goya. La cafetería está al lado del supermercado." },
             { ch: "巴勃羅是一位親切的老師。", sp: "Pablo es un profesor amable." },
             { ch: "我班上大約有 30 名學生。", sp: "Hay unos treinta estudiantes en mi clase." },
             { ch: "西班牙人很親切。", sp: "Los españoles son amables." },
-
-            // 06-206: 指示代名詞練習
             { ch: "狗在這裡。貓在那裡。背包在那裡（遠處）。", sp: "El perro está aquí. El gato está ahí. La mochila está allí." },
-
-            // 06-302: 教室設備
             { ch: "教室在哪裡？在走廊盡頭。", sp: "¿Dónde está el aula? Está al final del pasillo." },
             { ch: "教室裡有一塊黑板和一些桌子。有投影機嗎？", sp: "Hay una pizarra y unas mesas en el aula. ¿Hay un proyector allí?" },
             { ch: "不，沒有投影機。", sp: "No, no hay proyector." },
-
-            // 06-401: 居住狀況
             { ch: "你現在住在哪裡？我住在附近的一間公寓。", sp: "¿Dónde vives ahora? Vivo en un piso por aquí cerca." },
             { ch: "我有兩個室友。我住在二樓（西班牙一樓）。", sp: "Tengo dos compañeras de piso. Vivo en la primera planta." },
             { ch: "是一間附家具的公寓嗎？是的。", sp: "¿Es un piso amueblado? Sí." }
         ],
-"第 7 課：Ellos son mis padres (他們是我的父母)": [
-            // 07-101: 家庭成員與照片介紹
+        "第 7 課：Ellos son mis padres (他們是我的父母)": [
             { ch: "年長的是我的祖父母。他們是誰？", sp: "Los mayores son mis abuelos. ¿Quiénes son?" },
             { ch: "他們是我的父母，那邊那些是我的叔伯舅姨。", sp: "Ellos son mis padres y aquellos son mis tíos." },
             { ch: "你有兄弟姊妹嗎？有。這是我的哥哥，這是我的妹妹。", sp: "¿Tienes hermanos? Sí. Este es mi hermano mayor y esta es mi hermana menor." },
-
-            // 07-102: 人物介紹與孩子比較
             { ch: "你好，Ana。這位是 David，我的丈夫。", sp: "Hola, Ana. Este es David, mi marido." },
             { ch: "那個男孩是妳兒子，他很高。是的，他叫 Miguel，五歲，很調皮。", sp: "Aquel chico es tu hijo. Es muy alto. Sí, se llama Miguel. Tiene cinco años y es travieso." },
             { ch: "Alberto 四歲，和妳兒子一樣調皮。但 Alberto 比 Miguel 矮。", sp: "Alberto tiene cuatro años y es tan travieso como tu hijo. Pero Alberto es más bajo que Miguel." },
-
-            // 07-203: 指示代名詞練習
             { ch: "那邊那些男孩是我的同事。那個女孩是我妹妹。", sp: "Aquellos chicos son mis compañeros. Esa chica es mi hermana menor." },
             { ch: "這位是我兄弟。這是我姊妹。", sp: "Este es mi hermano. Esta es mi hermana." },
-
-            // 07-204: 形容詞與動詞比較級
             { ch: "Felisa 比 Elisa 漂亮。José 沒有 Enrique 那麼帥。", sp: "Felisa es más guapa que Elisa. José es menos guapo que Enrique." },
             { ch: "Luisa 和 Lucía 一樣漂亮。", sp: "Luisa es tan guapa como Lucía." },
             { ch: "Felisa 說話比 Elisa 多。José 吃得比 Enrique 少。", sp: "Felisa habla más que Elisa. José come menos que Enrique." },
             { ch: "我擁有的書比 Pedro 多 / 少 / 一樣多。", sp: "Yo tengo más libros que Pedro. / Yo tengo menos libros que Pedro. / Yo tengo tantos libros como Pedro." },
-
-            // 07-205: 特殊形式比較級
             { ch: "哥哥/姊姊。弟弟/妹妹。", sp: "Hermano mayor. Hermano menor." },
             { ch: "Antonio 比我大。我比 Antonio 小。", sp: "Antonio es mayor que yo. Yo soy menor que Antonio." },
             { ch: "這幅畫比那幅好。這本書比那本差。", sp: "Este cuadro es mejor que aquel. Este libro es peor que aquel." },
-
-            // 07-302: 照片方位描述
             { ch: "那個高個子男人是誰？是我堂兄弟。在他右邊的是我叔叔。", sp: "¿Quién es el hombre alto? Es mi primo. A la derecha de mi primo está mi tío." },
-            { ch: "那些女人是誰。？", sp: "¿Quiénes son las mujeres?" }, 
+            { ch: "那些女人是誰？", sp: "¿Quiénes son las mujeres?" },
             { ch: "那位年長的女性是我嬸嬸。她在我的堂姊妹左邊。", sp: "La mujer mayor es mi tía. Está a la izquierda de mi prima." },
-
-            // 07-401: 兄弟姊妹近況
-            { ch: "你有幾個兄弟姊妹？", sp: "¿Cuántos hermanos tienes?" }, 
+            { ch: "你有幾個兄弟姊妹？", sp: "¿Cuántos hermanos tienes?" },
             { ch: "你哥哥結婚了嗎？是的，他結婚了，有一個兒子。他們住在這附近。", sp: "¿Está casado tu hermano mayor? Sí, está casado y tiene un hijo. Viven cerca de aquí." },
             { ch: "那妳妹妹呢？她單身，但有男朋友。", sp: "¿Y tu hermana menor? Está soltera, pero tiene novio." }
         ],
         "第 8 課：¿Sabes cómo llegar allí? (你知道怎麼去那裡嗎？)": [
-            // 08-101: 規劃旅行與租車
             { ch: "這週末我們去 La Alberca 怎麼樣？那是個附近的村莊。", sp: "¿Qué tal si vamos a La Alberca este fin de semana? Es un pueblo cercano." },
             { ch: "好主意。你知道怎麼去那裡以及我們住哪裡嗎？", sp: "Buena idea. ¿Sabes cómo llegar allí y dónde nos alojamos?" },
             { ch: "我不怎麼了解那個村莊，但我們可以上網搜尋。", sp: "No conozco muy bien ese pueblo, pero podemos buscar por internet." },
             { ch: "你知道哪裡可以租車嗎？是的，我認識這附近的一家租車店。", sp: "¿Sabes dónde podemos alquilar un coche? Sí, conozco un alquiler de coches cerca de aquí." },
-
-            // 08-102: 人物背景（台灣人 Emilia）
             { ch: "你認識那個女人嗎？是的，她是 Emilia，Enrique 的女朋友。", sp: "¿Conoces a esa mujer? Sí, es Emilia, la novia de Enrique." },
             { ch: "她是台灣人，但她西班牙文和法文都說得很好。", sp: "Es taiwanesa, pero sabe muy bien español y francés." },
             { ch: "她和 Enrique 是辦公室同事。", sp: "Enrique y ella son compañeros de oficina." },
-
-            // 08-202 & 08-203: Saber / Conocer / Poder 練習
             { ch: "你知道 Enrique 有個女兒嗎？我不知道。", sp: "¿Sabes que Enrique tiene una hija? No lo sé." },
             { ch: "我不知道車站在哪裡。", sp: "No sé dónde está la estación." },
             { ch: "你知道怎麼使用這台相機嗎？抱歉，我不知道。", sp: "¿Sabes cómo usar la cámara? Lo siento, no lo sé." },
@@ -181,25 +130,19 @@
             { ch: "我不能唱歌，因為我感冒了。", sp: "No puedo cantar porque estoy resfriado." },
             { ch: "你可以來機場接我嗎？", sp: "¿Puedes recogerme en el aeropuerto?" },
             { ch: "我兄弟會踢足球。", sp: "Mi hermano sabe jugar al fútbol." },
-
-            // 08-302: 村莊休閒建議
             { ch: "你對這個村莊熟悉嗎？有一點。", sp: "¿Conoces bien este pueblo? Un poco." },
             { ch: "你知道哪裡可以野餐嗎？我認識這附近的一個公園。", sp: "¿Sabes dónde puedo hacer picnic? Conozco un parque cerca de aquí." },
             { ch: "那哪裡可以喝咖啡？我不知道，但我們可以上網找。", sp: "¿Y dónde puedo tomar café? No lo sé, pero podemos buscar por internet." },
-
-            // 08-401: 露營與西班牙美食計畫
             { ch: "和 Eva 及 Enrique 一起去露營怎麼樣？好主意。", sp: "¿Qué tal si vamos de camping con Eva y Enrique? Buena idea." },
             { ch: "我們可以在那裡烤肉和做西班牙大鍋飯。", sp: "Podemos hacer barbacoa y paella allí." },
             { ch: "你會做大鍋飯嗎？當然。此外，我還要做水果酒和開胃菜。", sp: "¿Sabes cómo hacer paella? Por supuesto. Además, voy a hacer sangría y tapas." }
-        ],
+        ]
     };
 
-    let currentLesson = [];
+    let currentQuestions = [];
     let currentIndex = 0;
     let currentScore = 0;
-    let selectedLessonName = "";
 
-    // 1. 初始化選單
     function initMenu() {
         const menu = document.getElementById('lesson-menu');
         menu.innerHTML = "";
@@ -212,116 +155,70 @@
         });
     }
 
-    // 2. 開始特定課程
     function startLesson(name) {
-        selectedLessonName = name;
-        currentLesson = [...allLessons[name]].sort(() => Math.random() - 0.5); // 隨機洗牌
+        currentQuestions = [...allLessons[name]].sort(() => Math.random() - 0.5);
         currentIndex = 0;
         currentScore = 0;
-        
         document.getElementById('menu-screen').style.display = 'none';
         document.getElementById('quiz-screen').style.display = 'block';
         document.getElementById('current-lesson-name').innerText = name;
         showQuestion();
     }
 
-   // 3. 顯示題目（新增：輸入框監聽器）
     function showQuestion() {
-        const q = currentLesson[currentIndex];
+        const q = currentQuestions[currentIndex];
         document.getElementById('chinese-text').innerText = q.ch;
-        
         const userInput = document.getElementById('user-input');
         userInput.value = "";
-        userInput.style.borderColor = "#ddd"; // 恢復邊框顏色
-        
+        userInput.style.borderColor = "#ddd";
         document.getElementById('feedback').innerText = "";
         document.getElementById('ans-display').style.display = "none";
-        
-        const checkBtn = document.getElementById('check-btn');
-        checkBtn.disabled = false;
-        checkBtn.innerText = "檢查答案";
-
-        document.getElementById('progress').innerText = `${currentIndex + 1} / ${currentLesson.length}`;
+        document.getElementById('progress').innerText = `${currentIndex + 1} / ${currentQuestions.length}`;
         document.getElementById('score').innerText = `得分: ${currentScore}`;
         userInput.focus();
-
-        // 【修正點】監聽輸入事件：當使用者打字時，重新啟用按鈕
-        userInput.oninput = function() {
-            checkBtn.disabled = false;
-            checkBtn.innerText = "檢查答案";
-            userInput.style.borderColor = "#007AFF"; 
-        };
     }
 
-    // 4. 檢查答案
-    // 輔助函數：去除重音符號以進行比對
     function removeAccents(str) {
         return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
     }
 
     function checkAnswer() {
         const userInput = document.getElementById('user-input');
-        const rawUserValue = userInput.value.trim();
+        const userValue = userInput.value.trim();
+        const correctAnswer = currentQuestions[currentIndex].sp;
         
-        // 正規化：轉小寫、去標點、去重音
-        const userClean = removeAccents(rawUserValue.toLowerCase().replace(/[¿?.,!]/g, ""));
-        const correctClean = removeAccents(currentLesson[currentIndex].sp.toLowerCase().replace(/[¿?.,!]/g, ""));
-        
+        const userClean = removeAccents(userValue.toLowerCase().replace(/[¿?.,!]/g, ""));
+        const correctClean = removeAccents(correctAnswer.toLowerCase().replace(/[¿?.,!]/g, ""));
+
         const feedback = document.getElementById('feedback');
         const ansDisp = document.getElementById('ans-display');
-        const checkBtn = document.getElementById('check-btn');
 
         if (userClean === correctClean) {
-            // 判定正確
             currentScore += 10;
+            const isPerfect = userValue.replace(/[¿?.,!]/g, "") === correctAnswer.replace(/[¿?.,!]/g, "");
+            feedback.innerText = isPerfect ? "¡Perfecto! 全對！🌟" : "答對了！但要注意重音符號：";
+            feedback.style.color = isPerfect ? "var(--success)" : "#FF9500";
             
-            // 檢查是否有重音打錯（原始字串比對）
-            const isAccentsPerfect = rawUserValue.replace(/[¿?.,!]/g, "") === currentLesson[currentIndex].sp.replace(/[¿?.,!]/g, "");
-            
-            if (!isAccentsPerfect) {
-                feedback.innerText = "答對了！但要注意重音符號：";
-                feedback.style.color = "#FF9500"; // 橘色提醒
-            } else {
-                feedback.innerText = "¡Perfecto! 全對！🌟";
-                feedback.style.color = "var(--success)";
-            }
-
-            // 處理顯示答案：將含有特殊符號的單字變紅
-            const words = currentLesson[currentIndex].sp.split(' ');
-            const highlightedAns = words.map(word => {
-                // 如果單字包含特殊字元，則標紅
-                if (/[áéíóúñÁÉÍÓÚÑ]/.test(word)) {
-                    return `<span style="color: red; font-weight: bold;">${word}</span>`;
-                }
-                return word;
-            }).join(' ');
-
-            userInput.style.borderColor = "var(--success)";
-            ansDisp.innerHTML = highlightedAns + " 🔊";
+            const words = correctAnswer.split(' ');
+            ansDisp.innerHTML = words.map(word => /[áéíóúñÁÉÍÓÚÑ]/.test(word) ? `<span style="color:red">${word}</span>` : word).join(' ') + " 🔊";
             ansDisp.style.display = "block";
-            checkBtn.disabled = true;
-            checkBtn.innerText = "已完成";
-            speak();
+            userInput.style.borderColor = "var(--success)";
+            speak(correctAnswer);
         } else {
-            // 判定錯誤
             feedback.innerText = "拼字有誤，再試試看！";
             feedback.style.color = "var(--danger)";
             userInput.style.borderColor = "var(--danger)";
-            
-            ansDisp.innerText = "查看正確答案？ (點擊此處) 🔊";
-            ansDisp.onclick = function() {
-                // 錯誤時查看答案也顯示紅字提醒
-                const words = currentLesson[currentIndex].sp.split(' ');
-                ansDisp.innerHTML = words.map(word => /[áéíóúñÁÉÍÓÚÑ]/.test(word) ? `<span style="color: red;">${word}</span>` : word).join(' ') + " 🔊";
-                speak();
+            ansDisp.innerText = "點擊此處查看答案 🔊";
+            ansDisp.onclick = () => {
+                ansDisp.innerHTML = correctAnswer + " 🔊";
+                speak(correctAnswer);
             };
             ansDisp.style.display = "block";
         }
     }
 
-    // 5. 下一題
     function nextQuestion() {
-        if (currentIndex < currentLesson.length - 1) {
+        if (currentIndex < currentQuestions.length - 1) {
             currentIndex++;
             showQuestion();
         } else {
@@ -335,18 +232,20 @@
         document.getElementById('quiz-screen').style.display = 'none';
     }
 
-    function speak() {
-        const utterance = new SpeechSynthesisUtterance(currentLesson[currentIndex].sp);
+    function speak(text) {
+        const utterance = new SpeechSynthesisUtterance(text);
         utterance.lang = 'es-ES';
         window.speechSynthesis.speak(utterance);
+    }
+    
+    function speakCurrent() {
+        speak(currentQuestions[currentIndex].sp);
     }
 
     initMenu();
 </script>
-
 </body>
 </html>
-
 
 
 
