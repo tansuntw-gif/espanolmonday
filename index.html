@@ -3,76 +3,272 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>西語造句挑戰</title>
+    <title>西語學習大師 - 20課全集</title>
     <style>
-        body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; background-color: #f4f7f9; }
-        .card { width: 90%; max-width: 400px; padding: 30px; background: white; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; }
-        .question { font-size: 20px; color: #666; margin-bottom: 20px; }
-        .answer-box { min-height: 120px; display: flex; flex-direction: column; justify-content: center; align-items: center; margin-bottom: 20px; border: 2px dashed #ddd; border-radius: 15px; padding: 10px; }
-        .spanish { font-size: 28px; color: #007AFF; font-weight: bold; cursor: pointer; display: none; }
-        .hint { color: #999; font-size: 14px; }
-        .btn-group { display: flex; flex-direction: column; gap: 10px; }
-        button { border: none; padding: 15px; border-radius: 12px; font-size: 18px; cursor: pointer; transition: 0.2s; font-weight: bold; }
-        .btn-show { background: #34C759; color: white; }
-        .btn-next { background: #FF9500; color: white; }
-        button:active { transform: scale(0.98); }
+        :root { --primary: #007AFF; --secondary: #6c757d; --success: #34C759; --danger: #FF3B30; }
+        body { font-family: -apple-system, sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .card { width: 90%; max-width: 450px; padding: 25px; background: white; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center; }
+        
+        /* 選單樣式 */
+        .menu-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 20px; max-height: 400px; overflow-y: auto; padding: 5px; }
+        .lesson-btn { background: white; border: 2px solid var(--primary); color: var(--primary); padding: 15px; border-radius: 12px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .lesson-btn:hover { background: var(--primary); color: white; }
+
+        /* 練習區樣式 */
+        .quiz-container { display: none; }
+        .stats-bar { display: flex; justify-content: space-between; font-size: 14px; color: #666; margin-bottom: 15px; }
+        #chinese-text { font-size: 22px; font-weight: bold; margin: 20px 0; min-height: 50px; color: #333; }
+        input[type="text"] { width: 100%; padding: 15px; font-size: 18px; border: 2px solid #ddd; border-radius: 12px; margin-bottom: 15px; text-align: center; outline: none; }
+        input[type="text"]:focus { border-color: var(--primary); }
+        .ans-display { font-size: 18px; color: var(--primary); font-weight: bold; margin-bottom: 15px; display: none; background: #eef7ff; padding: 10px; border-radius: 10px; cursor: pointer; }
+        
+        button.action-btn { width: 100%; border: none; padding: 15px; border-radius: 12px; font-size: 18px; cursor: pointer; font-weight: bold; margin-bottom: 10px; }
+        .btn-check { background: var(--primary); color: white; }
+        .btn-next { background: var(--secondary); color: white; }
+        .btn-back { background: none; color: var(--secondary); font-size: 14px; text-decoration: underline; }
     </style>
 </head>
 <body>
 
-<div class="card">
-    <div class="question">請翻譯這句話：</div>
-    <div id="chinese-text" style="font-size: 24px; font-weight: bold; margin-bottom: 20px;">這是我的家族照。</div>
-    
-    <div class="answer-box">
-        <div id="hint-text" class="hint">思考一下，點擊下方按鈕看答案</div>
-        <div id="spanish-text" class="spanish" onclick="speak()"></div>
+<div class="card" id="menu-screen">
+    <h2 style="margin-top:0">選擇課程</h2>
+    <p style="color:#666">共 20 課，點擊開始練習</p>
+    <div class="menu-grid" id="lesson-menu">
+        </div>
+</div>
+
+<div class="card quiz-container" id="quiz-screen">
+    <div class="stats-bar">
+        <div id="current-lesson-name">Lesson 7</div>
+        <div id="progress">1 / 10</div>
+        <div id="score">得分: 0</div>
     </div>
+    
+    <div id="chinese-text">題目載入中...</div>
+    <input type="text" id="user-input" placeholder="請輸入西文..." autocomplete="off">
+    
+    <div id="feedback" style="margin-bottom:10px; font-weight:bold;"></div>
+    <div id="ans-display" class="ans-display" onclick="speak()"></div>
 
     <div class="btn-group">
-        <button class="btn-show" onclick="showAnswer()">顯示答案並發音 🔊</button>
-        <button class="btn-next" onclick="nextQuiz()">下一題</button>
+        <button id="check-btn" class="action-btn btn-check" onclick="checkAnswer()">檢查答案</button>
+        <button class="action-btn btn-next" onclick="nextQuestion()">下一題</button>
+        <button class="btn-back" onclick="goToMenu()">回主選單</button>
     </div>
 </div>
 
 <script>
-    const quizData = [
-        { ch: "這是我的家族照。", sp: "Esta es la foto de mi familia." },
-        { ch: "長輩們是我的祖父母。", sp: "Los mayores son mis abuelos." },
-        { ch: "他們是我的父母。", sp: "Ellos son mis padres." },
-        { ch: "那些是我的叔伯嬸姨。", sp: "Aquellos son mis tíos." },
-        { ch: "你有兄弟姊妹嗎？", sp: "¿Tienes hermanos?" },
-        { ch: "這位是大衛，我的丈夫。", sp: "Este es David, mi marido." },
-        { ch: "那個男孩是你的兒子嗎？", sp: "¿Aquel chico es tu hijo?" },
-        { ch: "他很高。", sp: "Es muy alto." },
-        { ch: "他五歲，而且很調皮。", sp: "Tiene cinco años y es travieso." },
-        { ch: "阿爾貝托比米格爾矮。", sp: "Alberto es más bajo que Miguel." }
-    ];
+    // --- 題庫資料區 (你可以在這裡持續增加到 20 課) ---
+    const allLessons = {
+        "第 1 課：完整對話練習": [
+            { ch: "早安。", sp: "Buenos días" },
+            { ch: "午安/傍晚好。", sp: "Buenas tardes" },
+            { ch: "晚安。", sp: "Buenas noches" },
+            { ch: "你好嗎？(你)", sp: "¿Cómo estás?" },
+            { ch: "我很好，謝謝。", sp: "Bien, gracias" },
+            { ch: "你呢？", sp: "¿Y tú?" },
+            { ch: "我也很好。", sp: "Yo también estoy bien" },
+            { ch: "您好嗎？(您)", sp: "¿Cómo está usted?" },
+            { ch: "非常有禮貌地回答：我很好。", sp: "Muy bien, gracias" },
+            { ch: "最近怎麼樣？", sp: "¿Qué tal?" },
+            { ch: "一切都好嗎？", sp: "¿Cómo va todo?" },
+            { ch: "發生什麼事了？/ 怎麼了？", sp: "¿Qué pasa?" },
+            { ch: "有什麼新鮮事？", sp: "¿Qué hay?" },
+            { ch: "還可以/普通。", sp: "Regular" },
+            { ch: "不太好。", sp: "No muy bien" },
+            { ch: "再見。", sp: "Adiós" },
+            { ch: "待會見。", sp: "Hasta luego" },
+            { ch: "很快見。", sp: "Hasta pronto" },
+            { ch: "明天見。", sp: "Hasta mañana" },
+            { ch: "改天見。", sp: "Hasta otro día" },
+            { ch: "這下午我有個面試。", sp: "Tengo una entrevista esta tarde" },
+            { ch: "祝你好運！", sp: "¡Mucha suerte!" },
+            { ch: "加油！", sp: "¡Ánimo!" },
+            { ch: "謝謝，再見。", sp: "Gracias, adiós" }
+        ],
+        // 之後我們會依照這個標準繼續補完第 2 課到第 20 課
+"第 2 課：我是西班牙人 (完整對話)": [
+            { ch: "你叫什麼名字？", sp: "¿Cómo te llamas?" },
+            { ch: "我叫大衛。", sp: "Me llamo David" },
+            { ch: "你叫什麼名字？(您/正式)", sp: "¿Cómo se llama usted?" },
+            { ch: "我叫安娜。", sp: "Me llamo Ana" },
+            { ch: "很高興認識你。", sp: "Mucho gusto" },
+            { ch: "幸會。(男生用)", sp: "Encantado" },
+            { ch: "幸會。(女生用)", sp: "Encantada" },
+            { ch: "你從哪裡來？", sp: "¿De dónde eres?" },
+            { ch: "我來自西班牙。", sp: "Soy de España" },
+            { ch: "我是西班牙人。(女生)", sp: "Soy española" },
+            { ch: "我是西班牙人。(男生)", sp: "Soy español" },
+            { ch: "那是個非常漂亮的城市。", sp: "Es una ciudad muy bonita" },
+            { ch: "她是克里斯蒂娜。", sp: "Ella es Cristina" },
+            { ch: "她是學生嗎？", sp: "¿Es estudiante?" },
+            { ch: "不，她是老師。", sp: "No, es profesora" },
+            { ch: "她是西班牙文老師。", sp: "Es profesora de español" },
+            { ch: "安娜在台灣。", sp: "Ana está en Taiwán" },
+            { ch: "我很好。", sp: "Estoy bien" },
+            { ch: "我是法國人。(男生)", sp: "Soy francés" },
+            { ch: "我是法國人。(女生)", sp: "Soy francesa" },
+            { ch: "她的父親是西班牙人。", sp: "Su padre es español" },
+            { ch: "她的母親是日本人。", sp: "Su madre es japonesa" },
+            { ch: "我住在巴黎。", sp: "Vivo en París" },
+            { ch: "巴黎是法國的首都。", sp: "París es la capital de Francia" }
+        ],
+"第 3 課：職業與工作 (完整對話)": [
+            { ch: "你做什麼工作？", sp: "¿Qué haces?" },
+            { ch: "你是做什麼的？", sp: "¿A qué te dedicas?" },
+            { ch: "您是做什麼的？(正式)", sp: "¿A qué se dedica usted?" },
+            { ch: "您現在從事什麼工作？(正式)", sp: "¿A qué se dedica ahora?" },
+            { ch: "我是學生。", sp: "Soy estudiante" },
+            { ch: "我是大學生。", sp: "Soy estudiante de la universidad" },
+            { ch: "你在哪裡工作？", sp: "¿Dónde trabajas?" },
+            { ch: "我在一家咖啡館工作。", sp: "Trabajo en una cafetería" },
+            { ch: "你是學生，但你在咖啡館當店員。", sp: "Eres estudiante pero estás de camarero en una cafetería" },
+            { ch: "你在哪裡唸書？", sp: "¿Dónde estudias?" },
+            { ch: "我在台北唸書。", sp: "Estudio en Taipéi" },
+            { ch: "你會說英文嗎？", sp: "¿Hablas inglés?" },
+            { ch: "我說得一口流利的英文。", sp: "Hablo muy bien inglés" },
+            { ch: "我會說一點點西班牙文。", sp: "Hablo un poco de español" },
+            { ch: "我現在沒有工作。", sp: "Ahora no tengo trabajo" },
+            { ch: "我在找工作。", sp: "Busco trabajo" },
+            { ch: "我在一家中學當英文老師。", sp: "Trabajo como profesor de inglés en un instituto" },
+            { ch: "我在幼兒園當老師。", sp: "Trabajo como maestro en una guardería" },
+            { ch: "我在學校工作。", sp: "Trabajo en una escuela" },
+            { ch: "我在銀行擔任出納員。", sp: "Trabajo de cajero en un banco" },
+            { ch: "我在餐廳當服務生。", sp: "Estoy de camarera en un restaurante" },
+            { ch: "我在醫院工作，我是護士。", sp: "Trabajo en un hospital, soy enfermera" },
+            { ch: "我是獸醫。", sp: "Soy veterinario" },
+            { ch: "你在這家銀行工作很久了嗎？", sp: "¿Llevas mucho tiempo trabajando en este banco?" },
+            { ch: "不，我剛開始。", sp: "No, acabo de empezar" },
+            { ch: "這是一份兼職工作。", sp: "Es un puesto a tiempo parcial" },
+            { ch: "這是一份全職工作。", sp: "Es un trabajo a tiempo completo" },
+            { ch: "工作時間很彈性。", sp: "El horario es flexible" },
+            { ch: "我喜歡我的工作。", sp: "Me gusta mi trabajo" }
+        ],
+"第 4 課：我不舒服 (完整對話)": [
+            { ch: "你還好嗎？", sp: "¿Estás bien?" },
+            { ch: "你看起來臉色不太好。", sp: "Tienes mala cara" },
+            { ch: "不，我不太好。", sp: "No, no estoy bien" },
+            { ch: "我生病了。(女生說)", sp: "Estoy enferma" },
+            { ch: "我生病了。(男生說)", sp: "Estoy enfermo" },
+            { ch: "你怎麼了？", sp: "¿Qué te pasa?" },
+            { ch: "我發燒了。", sp: "Tengo fiebre" },
+            { ch: "我非常累。(女生說)", sp: "Estoy muy cansada" },
+            { ch: "我非常累。(男生說)", sp: "Estoy muy cansado" },
+            { ch: "我精疲力竭。(女生說)", sp: "Estoy agotada" },
+            { ch: "我精疲力竭。(男生說)", sp: "Estoy agotado" },
+            { ch: "你必須去看醫生。", sp: "Tienes que ir al médico" },
+            { ch: "是真的。", sp: "Es verdad" },
+            { ch: "是的，我有發燒。", sp: "Sí, tengo fiebre" },
+            { ch: "這下午我有個面試。", sp: "Tengo una entrevista esta tarde" },
+            { ch: "我有點緊張。(男生說)", sp: "Estoy un poco nervioso" },
+            { ch: "我有點緊張。(女生說)", sp: "Estoy un poco nerviosa" },
+            { ch: "加油！", sp: "¡Ánimo!" },
+            { ch: "祝你好運！", sp: "¡Mucha suerte!" },
+            { ch: "謝謝。", sp: "Gracias" },
+            { ch: "你不吃披薩嗎？", sp: "¿No comes la pizza?" },
+            { ch: "這披薩很好吃。", sp: "Esta pizza está deliciosa" },
+            { ch: "不，我不餓。", sp: "No, no tengo hambre" },
+            { ch: "你不餓嗎？", sp: "¿No tienes hambre?" },
+            { ch: "我這下午沒工作。", sp: "No tengo trabajo esta tarde" },
+            { ch: "我要去醫院。", sp: "Voy al médico" },
+            { ch: "我很累且想睡覺。", sp: "Estoy muy cansado y tengo sueño" },
+            { ch: "我很累。(男生說)", sp: "Estoy muy cansado" },
+            { ch: "我很累。(女生說)", sp: "Estoy muy cansada" }
+        ],
+    };
 
+    let currentLesson = [];
     let currentIndex = 0;
+    let currentScore = 0;
+    let selectedLessonName = "";
 
-    function showAnswer() {
-        document.getElementById('spanish-text').style.display = 'block';
-        document.getElementById('hint-text').style.display = 'none';
-        document.getElementById('spanish-text').innerText = quizData[currentIndex].sp;
+    // 1. 初始化選單
+    function initMenu() {
+        const menu = document.getElementById('lesson-menu');
+        menu.innerHTML = "";
+        Object.keys(allLessons).forEach(name => {
+            const btn = document.createElement('button');
+            btn.className = 'lesson-btn';
+            btn.innerText = name;
+            btn.onclick = () => startLesson(name);
+            menu.appendChild(btn);
+        });
+    }
+
+    // 2. 開始特定課程
+    function startLesson(name) {
+        selectedLessonName = name;
+        currentLesson = [...allLessons[name]].sort(() => Math.random() - 0.5); // 隨機洗牌
+        currentIndex = 0;
+        currentScore = 0;
+        
+        document.getElementById('menu-screen').style.display = 'none';
+        document.getElementById('quiz-screen').style.display = 'block';
+        document.getElementById('current-lesson-name').innerText = name;
+        showQuestion();
+    }
+
+    // 3. 顯示題目
+    function showQuestion() {
+        const q = currentLesson[currentIndex];
+        document.getElementById('chinese-text').innerText = q.ch;
+        document.getElementById('user-input').value = "";
+        document.getElementById('feedback').innerText = "";
+        document.getElementById('ans-display').style.display = "none";
+        document.getElementById('check-btn').disabled = false;
+        document.getElementById('progress').innerText = `${currentIndex + 1} / ${currentLesson.length}`;
+        document.getElementById('score').innerText = `得分: ${currentScore}`;
+        document.getElementById('user-input').focus();
+    }
+
+    // 4. 檢查答案
+    function checkAnswer() {
+        const user = document.getElementById('user-input').value.trim().toLowerCase().replace(/[¿?.,!]/g, "");
+        const correct = currentLesson[currentIndex].sp.toLowerCase().replace(/[¿?.,!]/g, "");
+        
+        const feedback = document.getElementById('feedback');
+        const ansDisp = document.getElementById('ans-display');
+
+        if (user === correct) {
+            currentScore += 10;
+            feedback.innerText = "¡Correcto! 🌟";
+            feedback.style.color = "var(--success)";
+        } else {
+            feedback.innerText = "再試試看！";
+            feedback.style.color = "var(--danger)";
+        }
+        
+        ansDisp.innerText = currentLesson[currentIndex].sp + " 🔊";
+        ansDisp.style.display = "block";
+        document.getElementById('check-btn').disabled = true;
         speak();
     }
 
-    function nextQuiz() {
-        currentIndex = (currentIndex + 1) % quizData.length;
-        document.getElementById('chinese-text').innerText = quizData[currentIndex].ch;
-        document.getElementById('spanish-text').style.display = 'none';
-        document.getElementById('hint-text').style.display = 'block';
+    // 5. 下一題
+    function nextQuestion() {
+        if (currentIndex < currentLesson.length - 1) {
+            currentIndex++;
+            showQuestion();
+        } else {
+            alert(`課程完成！總分：${currentScore}`);
+            goToMenu();
+        }
+    }
+
+    function goToMenu() {
+        document.getElementById('menu-screen').style.display = 'block';
+        document.getElementById('quiz-screen').style.display = 'none';
     }
 
     function speak() {
-        const text = quizData[currentIndex].sp;
-        const utterance = new SpeechSynthesisUtterance(text);
+        const utterance = new SpeechSynthesisUtterance(currentLesson[currentIndex].sp);
         utterance.lang = 'es-ES';
-        utterance.rate = 0.8;
         window.speechSynthesis.speak(utterance);
     }
+
+    initMenu();
 </script>
 
 </body>
 </html>
+
