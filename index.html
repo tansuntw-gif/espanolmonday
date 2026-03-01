@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>西語學習大師 - 精簡進度版</title>
+    <title>西語學習大師 - 流程優化版</title>
     <style>
         :root { --primary: #007AFF; --secondary: #8E8E93; --success: #34C759; --danger: #FF3B30; --voice: #5856D6; --clear: #FF9500; }
         body { font-family: -apple-system, sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
@@ -37,7 +37,6 @@
         
         .btn-back { background: none; color: var(--secondary); font-size: 14px; text-decoration: underline; border: none; cursor: pointer; margin-top: 10px; }
         
-        /* 正在聽時按鈕變紅色並跳動 */
         #mic-btn.listening { background-color: var(--danger) !important; animation: pulse 1.5s infinite; }
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
     </style>
@@ -46,7 +45,7 @@
 
 <div class="card" id="menu-screen">
     <h2 style="margin-top:0">西班牙語練習</h2>
-    <p style="color:#666">第 5 課至第 8 課 (流暢練習版)</p>
+    <p style="color:#666">第 5 課至第 8 課 (流程優化版)</p>
     <div class="menu-grid" id="lesson-menu"></div>
 </div>
 
@@ -84,7 +83,7 @@
     let currentQuestions = [];
     let currentIndex = 0;
     let recognitionTimer;
-    let isUserStopping = false; // 標記是否為使用者手動停止
+    let isUserStopping = false;
 
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     let recognition;
@@ -104,54 +103,42 @@
 
         recognition.onend = () => {
             const btn = document.getElementById('mic-btn');
-            // 如果不是使用者手動停止，且按鈕還在紅色狀態（代表可能因停頓意外斷開），則自動重啟
             if (!isUserStopping && btn.classList.contains('listening')) {
-                try {
-                    recognition.start();
-                } catch (e) {
-                    resetMicBtn();
-                }
+                try { recognition.start(); } catch (e) { resetMicBtn(); }
             } else {
                 resetMicBtn();
             }
         };
 
-        recognition.onerror = () => {
-            resetMicBtn();
-        };
+        recognition.onerror = () => resetMicBtn();
     }
 
-    // --- 修正：核心切換邏輯 ---
     function toggleListening() {
         if (!recognition) return alert("不支援口說");
         const btn = document.getElementById('mic-btn');
 
         if (btn.classList.contains('listening')) {
-            // 目前正在聽，執行停止
-            isUserStopping = true;
-            recognition.stop();
-            resetMicBtn();
+            forceStopListening();
         } else {
-            // 目前沒在聽，執行開始
             isUserStopping = false;
             try {
                 recognition.start();
                 btn.classList.add('listening');
                 btn.innerText = "聽取中 (點擊結束)";
                 
-                // 15 秒自動停止
                 clearTimeout(recognitionTimer);
                 recognitionTimer = setTimeout(() => {
-                    if (btn.classList.contains('listening')) {
-                        isUserStopping = true; // 超時視同手動停止，不再重啟
-                        recognition.stop();
-                        document.getElementById('feedback').innerText = "聆聽逾時 (15秒)";
-                    }
+                    if (btn.classList.contains('listening')) forceStopListening();
                 }, 15000);
-            } catch (e) {
-                console.error("啟動失敗", e);
-            }
+            } catch (e) { console.error(e); }
         }
+    }
+
+    // --- 修正：強制終止聆聽的統一函式 ---
+    function forceStopListening() {
+        isUserStopping = true;
+        if (recognition) recognition.stop();
+        resetMicBtn();
     }
 
     function resetMicBtn() {
@@ -161,7 +148,36 @@
         clearTimeout(recognitionTimer);
     }
 
-    // --- 其他功能保持不變 ---
+    function clearContent() {
+        const userInput = document.getElementById('user-input');
+        userInput.value = "";
+        userInput.focus();
+    }
+
+    // --- 修正：送出答案時終止聆聽 ---
+    function checkAnswer() {
+        // 如果正在口說，先強制停止
+        forceStopListening();
+
+        const userInput = document.getElementById('user-input');
+        const userValue = userInput.value.trim();
+        const feedback = document.getElementById('feedback');
+        const correctAnswer = currentQuestions[currentIndex].sp;
+        const userClean = normalizeText(userValue);
+        const correctClean = normalizeText(correctAnswer);
+
+        if (userClean === correctClean && userValue !== "") {
+            feedback.innerText = "¡Excelente! 答對了！🌟";
+            feedback.style.color = "var(--success)";
+            userInput.style.borderColor = "var(--success)";
+        } else {
+            feedback.innerText = "不完全正確，請參考下方答案：";
+            feedback.style.color = "var(--danger)";
+            userInput.style.borderColor = "var(--danger)";
+        }
+        showFullAnswer(correctAnswer);
+    }
+
     function initMenu() {
         const menu = document.getElementById('lesson-menu');
         menu.innerHTML = "";
@@ -199,32 +215,6 @@
         document.getElementById('progress-bar').style.width = `${percent}%`;
     }
 
-    function clearContent() {
-        const userInput = document.getElementById('user-input');
-        userInput.value = "";
-        userInput.focus();
-    }
-
-    function checkAnswer() {
-        const userInput = document.getElementById('user-input');
-        const userValue = userInput.value.trim();
-        const feedback = document.getElementById('feedback');
-        const correctAnswer = currentQuestions[currentIndex].sp;
-        const userClean = normalizeText(userValue);
-        const correctClean = normalizeText(correctAnswer);
-
-        if (userClean === correctClean && userValue !== "") {
-            feedback.innerText = "¡Excelente! 答對了！🌟";
-            feedback.style.color = "var(--success)";
-            userInput.style.borderColor = "var(--success)";
-        } else {
-            feedback.innerText = "不完全正確，請參考下方答案：";
-            feedback.style.color = "var(--danger)";
-            userInput.style.borderColor = "var(--danger)";
-        }
-        showFullAnswer(correctAnswer);
-    }
-
     function normalizeText(text) {
         return text.toLowerCase().replace(/[¿?.,!]/g, "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
     }
@@ -256,3 +246,23 @@
 </script>
 </body>
 </html>
+    function nextQuestion() {
+        if (currentIndex < currentQuestions.length - 1) { 
+            currentIndex++; 
+            showQuestion(); 
+        } else { 
+            document.getElementById('progress-text').innerText = `完成進度: 100%`;
+            document.getElementById('progress-bar').style.width = `100%`;
+            setTimeout(() => { alert("恭喜完成本課所有練習！"); goToMenu(); }, 500);
+        }
+    }
+
+    function goToMenu() { document.getElementById('menu-screen').style.display = 'block'; document.getElementById('quiz-screen').style.display = 'none'; }
+    function speak(text) { const u = new SpeechSynthesisUtterance(text); u.lang = 'es-ES'; window.speechSynthesis.speak(u); }
+    function speakCurrent() { speak(currentQuestions[currentIndex].sp); }
+
+    initMenu();
+</script>
+</body>
+</html>
+
