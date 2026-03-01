@@ -94,87 +94,80 @@
     // --- 語音辨識初始化 ---
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     let recognition;
-    if (SpeechRecognition) {
+if (SpeechRecognition) {
         recognition = new SpeechRecognition();
         recognition.lang = 'es-ES';
-        recognition.continuous = false; // 確保說完一句就自動結束
+        // 讓辨識持續進行，不會因為你中間停頓就自動斷掉
+        recognition.continuous = true; 
         recognition.interimResults = false;
 
         recognition.onresult = (e) => {
-    const transcript = e.results[0][0].transcript;
-    const userInput = document.getElementById('user-input');
-    
-    // 1. 無論對錯，先將聽到的文字顯示在對話框中
-    userInput.value = transcript;
-    
-    // 2. 自動聚焦
-    userInput.focus();
+            // 取得最新的辨識結果
+            const transcript = e.results[e.results.length - 1][0].transcript;
+            const userInput = document.getElementById('user-input');
+            
+            // 將結果填入，如果是 continuous 模式，我們通常用累加或替換
+            userInput.value = transcript; 
+            userInput.focus();
 
-    // 3. 根據目前模式執行比對
-    if (isCorrecting) {
-        handleTyping(); 
-    } else {
-        // --- 這裡加入一行微調 ---
-        // 確保口說後，按鈕外觀立刻恢復成「準備檢查」的藍色狀態
-        resetCheckBtn(); 
-        
-        // 執行檢查邏輯
-        checkAnswer(); 
-        }
+            // 即時進行比對邏輯，但不在此處停止錄音
+            if (isCorrecting) {
+                handleTyping();
+            } else {
+                checkAnswer();
+            }
         };
 
         recognition.onend = () => {
+            // 只有當真的結束時（手動或 15 秒到）才重置 UI
             resetMicBtn();
-            clearTimeout(recognitionTimer); // 結束時清除倒數計時
-        };
-
-        recognition.onerror = (e) => {
-            console.error("辨識錯誤:", e.error);
-            resetMicBtn();
-            clearTimeout(recognitionTimer);
         };
     }
 
-    // --- 修改後的開始/停止口說函式 ---
     function startListening() {
-        if (!recognition) return alert("您的瀏覽器不支援口說辨識");
+        if (!recognition) return alert("不支援口說");
 
         const btn = document.getElementById('mic-btn');
         
-        // 如果正在聆聽，再次點擊就「停止」
+        // 邏輯：如果正在聽，按下就「停止」
         if (btn.classList.contains('listening')) {
-            recognition.stop();
+            stopRecognition();
             return;
         }
 
+        // 開始聆聽流程
         try {
             recognition.start();
             btn.classList.add('listening');
-            btn.innerText = "正在聽... (再次點擊停止)";
+            btn.innerText = "正在聽... (手動點擊結束)";
 
-            // 設定 15 秒自動逾時
-            clearTimeout(recognitionTimer); // 啟動前先清空舊的計時
+            // 強制 15 秒後停止
+            clearTimeout(recognitionTimer);
             recognitionTimer = setTimeout(() => {
                 if (btn.classList.contains('listening')) {
-                    recognition.stop();
-                    document.getElementById('feedback').innerText = "聆聽逾時 (15秒)";
-                    document.getElementById('feedback').style.color = "var(--secondary)";
+                    stopRecognition();
+                    document.getElementById('feedback').innerText = "時間到，自動結束聆聽";
                 }
             }, 15000); 
 
         } catch (e) {
-            console.error("語音啟動失敗", e);
+            console.error("啟動失敗", e);
+        }
+    }
+
+    function stopRecognition() {
+        if (recognition) {
+            recognition.stop();
+            clearTimeout(recognitionTimer); // 清除 15 秒倒數
             resetMicBtn();
         }
     }
 
-    // 輔助函式：統一重置按鈕外觀
     function resetMicBtn() {
         const btn = document.getElementById('mic-btn');
         btn.classList.remove('listening');
         btn.innerText = "🎤 按下開始口說";
     }
-
     function initMenu() {
         const menu = document.getElementById('lesson-menu');
         menu.innerHTML = "";
@@ -351,6 +344,7 @@ function checkAnswer() {
 </script>
 </body>
 </html>
+
 
 
 
