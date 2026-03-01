@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>西語學習大師 - 專業加強版</title>
+    <title>西語學習大師 - 專業練習版</title>
     <style>
         :root { --primary: #007AFF; --secondary: #6c757d; --success: #34C759; --danger: #FF3B30; --voice: #5856D6; --warn: #FF9500; --clear: #8E8E93; --send: #007AFF; }
         body { font-family: -apple-system, sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
@@ -25,7 +25,6 @@
         .ans-display { font-size: 18px; color: var(--primary); font-weight: bold; margin-bottom: 15px; display: none; background: #eef7ff; padding: 10px; border-radius: 10px; cursor: pointer; }
         button.action-btn { width: 100%; border: none; padding: 15px; border-radius: 12px; font-size: 18px; cursor: pointer; font-weight: bold; margin-bottom: 10px; transition: 0.3s; }
         
-        /* 功能按鈕區塊排版 */
         .input-tools { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
         
         .btn-send { background: var(--send); color: white; }
@@ -41,7 +40,7 @@
 
 <div class="card" id="menu-screen">
     <h2 style="margin-top:0">西班牙語練習</h2>
-    <p style="color:#666">第 5 課至第 8 課 (完整功能版)</p>
+    <p style="color:#666">第 5 課至第 8 課 (反饋強化版)</p>
     <div class="menu-grid" id="lesson-menu"></div>
 </div>
 
@@ -83,6 +82,7 @@
     let currentScore = 0;
     let attemptCount = 0;
     let isCorrecting = false;
+    let hasBeenCorrect = false; // 紀錄該題是否曾經答對過
     let recognitionTimer;
 
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -100,7 +100,9 @@
             userInput.value += (userInput.value ? " " : "") + transcript;
             userInput.focus();
             
-            if (isCorrecting) handleTyping();
+            // 每次口說更新內容，就視同新的開始，重置按鈕狀態
+            if (!isCorrecting) resetSendButton();
+            else handleTyping();
         };
 
         recognition.onend = () => {
@@ -110,12 +112,12 @@
         };
     }
 
-    // 1. 清除內容功能
     function clearContent() {
         const userInput = document.getElementById('user-input');
         userInput.value = "";
         userInput.focus();
-        handleTyping(); // 重置按鈕狀態
+        if (!isCorrecting) resetSendButton();
+        else handleTyping();
     }
 
     function startListening() {
@@ -123,10 +125,13 @@
         const btn = document.getElementById('mic-btn');
         if (btn.classList.contains('listening')) { stopRecognition(); return; }
 
+        // 開始口說即視為新開始，重置送出按鈕
+        if (!isCorrecting) resetSendButton();
+
         try {
             recognition.start();
             btn.classList.add('listening');
-            btn.innerText = "聆聽中 (點擊結束)";
+            btn.innerText = "聽取中 (點擊結束)";
             clearTimeout(recognitionTimer);
             recognitionTimer = setTimeout(() => {
                 if (btn.classList.contains('listening')) stopRecognition();
@@ -138,7 +143,6 @@
         if (recognition) {
             recognition.stop();
             resetMicBtn();
-            // 注意：手動停止後不自動送出，讓使用者檢查完再按「送出」
         }
     }
 
@@ -146,6 +150,14 @@
         const btn = document.getElementById('mic-btn');
         btn.classList.remove('listening');
         btn.innerText = "🎤 開始口說";
+    }
+
+    function resetSendButton() {
+        const checkBtn = document.getElementById('check-btn');
+        checkBtn.innerText = "🚀 送出答案";
+        checkBtn.style.backgroundColor = "var(--send)";
+        checkBtn.disabled = false;
+        document.getElementById('user-input').style.borderColor = "#ddd";
     }
 
     function initMenu() {
@@ -168,7 +180,7 @@
     }
 
     function showQuestion() {
-        attemptCount = 0; isCorrecting = false;
+        attemptCount = 0; isCorrecting = false; hasBeenCorrect = false;
         const q = currentQuestions[currentIndex];
         document.getElementById('chinese-text').innerText = q.ch;
         const userInput = document.getElementById('user-input');
@@ -178,12 +190,10 @@
         document.getElementById('correct-btn').style.display = "none";
         document.getElementById('progress').innerText = `${currentIndex + 1} / ${currentQuestions.length}`;
         document.getElementById('score').innerText = `得分: ${currentScore}`;
-        const checkBtn = document.getElementById('check-btn');
-        checkBtn.disabled = false; checkBtn.innerText = "🚀 送出答案"; checkBtn.style.backgroundColor = "var(--send)";
+        resetSendButton();
         userInput.focus();
     }
 
-    // 2. 送出與核對邏輯
     function checkAnswer() {
         const userInput = document.getElementById('user-input');
         const userValue = userInput.value.trim();
@@ -193,19 +203,31 @@
         const userClean = normalizeText(userValue);
         const correctClean = normalizeText(correctAnswer);
 
-        if (checkBtn.innerText === "顯示正確答案" || (userClean === correctClean && userValue !== "")) {
-            if (userClean === correctClean) {
-                if (attemptCount !== -1) { currentScore += 10; attemptCount = -1; }
-                feedback.innerText = "¡Excelente! 答對了！🌟";
-                feedback.style.color = "var(--success)";
-            } else {
-                feedback.innerText = "正確答案如下：";
-                feedback.style.color = "var(--voice)";
-            }
+        // 如果按鈕處於顯示答案模式，直接揭曉
+        if (checkBtn.innerText === "顯示正確答案") {
+            feedback.innerText = "正確答案如下：";
+            feedback.style.color = "var(--voice)";
             showFullAnswer(correctAnswer);
-            checkBtn.innerText = "再次送出 (重複練習)";
+            enterCorrectionMode(correctAnswer); // 顯示答案後必須訂正
+            return;
+        }
+
+        if (userClean === correctClean && userValue !== "") {
+            // 答對邏輯
+            if (!hasBeenCorrect) {
+                currentScore += 10;
+                hasBeenCorrect = true; // 標記已拿過分
+            }
+            feedback.innerText = "¡Excelente! 答對了！🌟";
+            feedback.style.color = "var(--success)";
+            userInput.style.borderColor = "var(--success)";
+            showFullAnswer(correctAnswer);
+            
+            checkBtn.innerText = "🚀 再次送出 (重複練習)";
             checkBtn.style.backgroundColor = "var(--success)";
+            document.getElementById('score').innerText = `得分: ${currentScore}`;
         } else {
+            // 答錯邏輯
             attemptCount++;
             if (attemptCount === 1) {
                 feedback.innerText = "不完全正確，請修正或再按一次送出以顯示答案。";
@@ -214,21 +236,34 @@
                 checkBtn.innerText = "顯示正確答案";
                 checkBtn.style.backgroundColor = "var(--warn)";
             } else {
-                isCorrecting = true;
+                feedback.innerText = "請根據答案進行訂正：";
+                feedback.style.color = "var(--voice)";
                 showFullAnswer(correctAnswer);
-                userInput.value = "";
-                userInput.placeholder = "請訂正：請照著輸入一次正確答案...";
-                checkBtn.innerText = "請按下一題";
-                checkBtn.disabled = true;
-                document.getElementById('correct-btn').style.display = "block";
-                document.getElementById('correct-btn').innerText = "訂正中...";
+                enterCorrectionMode(correctAnswer);
             }
         }
+    }
+
+    function enterCorrectionMode(correctAnswer) {
+        isCorrecting = true;
+        const userInput = document.getElementById('user-input');
+        const checkBtn = document.getElementById('check-btn');
+        const correctBtn = document.getElementById('correct-btn');
+
+        userInput.value = "";
+        userInput.placeholder = "請照著輸入一次正確答案以訂正...";
+        checkBtn.innerText = "請按下一題";
+        checkBtn.disabled = true; // 訂正模式下，送出鈕暫時失效
+        correctBtn.style.display = "block";
+        correctBtn.innerText = "訂正中...";
+        correctBtn.disabled = true;
+        correctBtn.style.backgroundColor = "var(--warn)";
     }
 
     function handleTyping() {
         const userInput = document.getElementById('user-input');
         const checkBtn = document.getElementById('check-btn');
+        
         if (isCorrecting) {
             const correctBtn = document.getElementById('correct-btn');
             const correctAnswer = currentQuestions[currentIndex].sp;
@@ -236,6 +271,7 @@
                 correctBtn.innerText = "訂正完成 <";
                 correctBtn.style.backgroundColor = "var(--success)";
                 correctBtn.disabled = false;
+                userInput.style.borderColor = "var(--success)";
             } else {
                 correctBtn.innerText = "訂正中...";
                 correctBtn.disabled = true;
@@ -243,9 +279,10 @@
             }
             return;
         }
-        if (checkBtn.innerText.includes("再次送出")) {
-            checkBtn.innerText = "🚀 送出答案";
-            checkBtn.style.backgroundColor = "var(--send)";
+
+        // 非訂正模式，文字變動即重置為送出狀態
+        if (checkBtn.innerText !== "🚀 送出答案" && checkBtn.innerText !== "顯示正確答案") {
+            resetSendButton();
         }
         userInput.style.borderColor = "#ddd";
     }
@@ -268,7 +305,10 @@
     }
 
     function nextQuestion() {
-        if (currentIndex < currentQuestions.length - 1) { currentIndex++; showQuestion(); }
+        if (currentIndex < currentQuestions.length - 1) { 
+            currentIndex++; showQuestion(); 
+            document.querySelector('.btn-next').style.backgroundColor = "var(--secondary)";
+        }
         else { alert("課程結束！"); goToMenu(); }
     }
 
@@ -280,8 +320,5 @@
 </script>
 </body>
 </html>
-
-
-
 
 
