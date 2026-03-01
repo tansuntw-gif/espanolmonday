@@ -102,13 +102,21 @@
 
         recognition.onresult = (e) => {
             const transcript = e.results[0][0].transcript;
-            document.getElementById('user-input').value = transcript;
+            const userInput = document.getElementById('user-input');
             
-            // 無論什麼模式，口說完都觸發比對
+            // 無論對錯，先將聽到的文字顯示在對話框中
+            userInput.value = transcript;
+            
+            // 讓輸入框自動聚焦，方便使用者查看或修改
+            userInput.focus();
+
+            // 根據目前模式執行比對
             if (isCorrecting) {
-                handleTyping(); // 訂正模式：檢查是否訂正成功
+                // 訂正模式：即時比對文字，若正確則綠色按鈕亮起
+                handleTyping(); 
             } else {
-                checkAnswer();  // 一般模式：檢查答案對錯
+                // 一般模式：執行檢查邏輯（判斷對錯、給分、或進入訂正模式）
+                checkAnswer(); 
             }
         };
 
@@ -338,6 +346,7 @@
 </script>
 </body>
 </html>
+
 
 
 
