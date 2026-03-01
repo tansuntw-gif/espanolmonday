@@ -37,6 +37,7 @@
         
         .btn-back { background: none; color: var(--secondary); font-size: 14px; text-decoration: underline; border: none; cursor: pointer; margin-top: 10px; }
         
+        /* 正在聽時按鈕變紅色並跳動 */
         #mic-btn.listening { background-color: var(--danger) !important; animation: pulse 1.5s infinite; }
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
     </style>
@@ -63,7 +64,7 @@
     <textarea id="user-input" placeholder="請在此輸入、或開始口說..." rows="3"></textarea>
     
     <div class="input-tools">
-        <button id="mic-btn" class="action-btn btn-mic" onclick="startListening()">🎤 開始口說</button>
+        <button id="mic-btn" class="action-btn btn-mic" onclick="toggleListening()">🎤 開始口說</button>
         <button class="action-btn btn-clear" onclick="clearContent()">🗑️ 清除內容</button>
     </div>
 
@@ -83,6 +84,7 @@
     let currentQuestions = [];
     let currentIndex = 0;
     let recognitionTimer;
+    let isUserStopping = false; // 標記是否為使用者手動停止
 
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     let recognition;
@@ -102,11 +104,64 @@
 
         recognition.onend = () => {
             const btn = document.getElementById('mic-btn');
-            if (btn.classList.contains('listening')) recognition.start();
-            else resetMicBtn();
+            // 如果不是使用者手動停止，且按鈕還在紅色狀態（代表可能因停頓意外斷開），則自動重啟
+            if (!isUserStopping && btn.classList.contains('listening')) {
+                try {
+                    recognition.start();
+                } catch (e) {
+                    resetMicBtn();
+                }
+            } else {
+                resetMicBtn();
+            }
+        };
+
+        recognition.onerror = () => {
+            resetMicBtn();
         };
     }
 
+    // --- 修正：核心切換邏輯 ---
+    function toggleListening() {
+        if (!recognition) return alert("不支援口說");
+        const btn = document.getElementById('mic-btn');
+
+        if (btn.classList.contains('listening')) {
+            // 目前正在聽，執行停止
+            isUserStopping = true;
+            recognition.stop();
+            resetMicBtn();
+        } else {
+            // 目前沒在聽，執行開始
+            isUserStopping = false;
+            try {
+                recognition.start();
+                btn.classList.add('listening');
+                btn.innerText = "聽取中 (點擊結束)";
+                
+                // 15 秒自動停止
+                clearTimeout(recognitionTimer);
+                recognitionTimer = setTimeout(() => {
+                    if (btn.classList.contains('listening')) {
+                        isUserStopping = true; // 超時視同手動停止，不再重啟
+                        recognition.stop();
+                        document.getElementById('feedback').innerText = "聆聽逾時 (15秒)";
+                    }
+                }, 15000);
+            } catch (e) {
+                console.error("啟動失敗", e);
+            }
+        }
+    }
+
+    function resetMicBtn() {
+        const btn = document.getElementById('mic-btn');
+        btn.classList.remove('listening');
+        btn.innerText = "🎤 開始口說";
+        clearTimeout(recognitionTimer);
+    }
+
+    // --- 其他功能保持不變 ---
     function initMenu() {
         const menu = document.getElementById('lesson-menu');
         menu.innerHTML = "";
@@ -150,32 +205,11 @@
         userInput.focus();
     }
 
-    function startListening() {
-        if (!recognition) return alert("不支援口說");
-        const btn = document.getElementById('mic-btn');
-        if (btn.classList.contains('listening')) { recognition.stop(); return; }
-
-        try {
-            recognition.start();
-            btn.classList.add('listening');
-            btn.innerText = "聽取中 (點擊結束)";
-            clearTimeout(recognitionTimer);
-            recognitionTimer = setTimeout(() => { if (btn.classList.contains('listening')) recognition.stop(); }, 15000);
-        } catch (e) { console.error(e); }
-    }
-
-    function resetMicBtn() {
-        const btn = document.getElementById('mic-btn');
-        btn.classList.remove('listening');
-        btn.innerText = "🎤 開始口說";
-    }
-
     function checkAnswer() {
         const userInput = document.getElementById('user-input');
         const userValue = userInput.value.trim();
         const feedback = document.getElementById('feedback');
         const correctAnswer = currentQuestions[currentIndex].sp;
-        
         const userClean = normalizeText(userValue);
         const correctClean = normalizeText(correctAnswer);
 
@@ -208,7 +242,6 @@
             currentIndex++; 
             showQuestion(); 
         } else { 
-            // 最後一題完成
             document.getElementById('progress-text').innerText = `完成進度: 100%`;
             document.getElementById('progress-bar').style.width = `100%`;
             setTimeout(() => { alert("恭喜完成本課所有練習！"); goToMenu(); }, 500);
