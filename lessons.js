@@ -17,7 +17,7 @@ const allLessons = {
             { ch: "公寓在報攤旁邊嗎？公寓就在那裡。", sp: "¿Está el piso al lado de un quiosco? Allí está el piso." },
             { ch: "Elisa，妳丈夫在哪裡？他在法國出差。", sp: "Elisa, ¿dónde está tu marido? Está de viaje de negocios por Francia." },
             { ch: "明天他在巴黎有一個會議。", sp: "Mañana tiene una reunión en París." },
-            { ch: "你們現在住在馬德里嗎？不，我們在薩拉曼卡買了一棟別墅。", sp: "¿Vivís en Madrid now? No, mi marido y yo compramos un chalé en Salamanca." },
+            { ch: "你們現在住在馬德里嗎？不，我們在薩拉曼卡買了一棟別墅。", sp: "¿Vivís en Madrid ahora? No, mi marido y yo compramos un chalé en Salamanca." },
             { ch: "離市中心有點遠，但在一個非常安靜的區域。", sp: "Está un poco lejos del centro, pero está en una zona muy tranquila." },
             { ch: "手機在哪裡？手機在桌子上。", sp: "¿Dónde está el móvil? El móvil está encima de la mesa." },
             { ch: "你父親在哪裡工作？我父親在一所學校工作。", sp: "¿Dónde trabaja tu padre? Mi padre trabaja en una escuela." }
@@ -88,4 +88,5 @@ const allLessons = {
             { ch: "我們可以在那裡烤肉和做西班牙大鍋飯。", sp: "Podemos hacer barbacoa y paella allí." },
             { ch: "你會做大鍋飯嗎？當然。此外，我還要做水果酒和開胃菜。", sp: "¿Sabes cómo hacer paella? Por supuesto. Además, voy a hacer sangría y tapas." }
         ] 
+
 };
