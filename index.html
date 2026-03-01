@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>西語學習大師 - 最終強化版</title>
+    <title>西語學習大師 - 專業加強版</title>
     <style>
-        :root { --primary: #007AFF; --secondary: #6c757d; --success: #34C759; --danger: #FF3B30; --voice: #5856D6; --warn: #FF9500; }
+        :root { --primary: #007AFF; --secondary: #6c757d; --success: #34C759; --danger: #FF3B30; --voice: #5856D6; --warn: #FF9500; --clear: #8E8E93; --send: #007AFF; }
         body { font-family: -apple-system, sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
         .card { width: 90%; max-width: 450px; padding: 25px; background: white; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center; }
         .menu-grid { display: grid; grid-template-columns: repeat(1, 1fr); gap: 10px; margin-top: 20px; max-height: 400px; overflow-y: auto; padding: 5px; }
@@ -24,9 +24,14 @@
 
         .ans-display { font-size: 18px; color: var(--primary); font-weight: bold; margin-bottom: 15px; display: none; background: #eef7ff; padding: 10px; border-radius: 10px; cursor: pointer; }
         button.action-btn { width: 100%; border: none; padding: 15px; border-radius: 12px; font-size: 18px; cursor: pointer; font-weight: bold; margin-bottom: 10px; transition: 0.3s; }
-        .btn-check { background: var(--primary); color: white; }
+        
+        /* 功能按鈕區塊排版 */
+        .input-tools { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+        
+        .btn-send { background: var(--send); color: white; }
         .btn-next { background: var(--secondary); color: white; }
         .btn-back { background: none; color: var(--secondary); font-size: 14px; text-decoration: underline; border: none; cursor: pointer; }
+        
         #correct-btn { background-color: var(--warn); color: white; display: none; }
         #mic-btn.listening { background-color: var(--danger) !important; animation: pulse 1.5s infinite; }
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
@@ -36,7 +41,7 @@
 
 <div class="card" id="menu-screen">
     <h2 style="margin-top:0">西班牙語練習</h2>
-    <p style="color:#666">第 5 課至第 8 課 (進階語音版)</p>
+    <p style="color:#666">第 5 課至第 8 課 (完整功能版)</p>
     <div class="menu-grid" id="lesson-menu"></div>
 </div>
 
@@ -48,17 +53,22 @@
     </div>
     <div id="chinese-text">題目載入中...</div>
 
-    <textarea id="user-input" placeholder="請輸入或用說的..." oninput="handleTyping()" rows="3"></textarea>
+    <textarea id="user-input" placeholder="請在此輸入、或使用口說..." oninput="handleTyping()" rows="3"></textarea>
     
-    <button id="mic-btn" class="action-btn" style="background-color: var(--voice); color: white;" onclick="startListening()">
-        🎤 按下開始口說
-    </button>
+    <div class="input-tools">
+        <button id="mic-btn" class="action-btn" style="background-color: var(--voice); color: white; margin-bottom: 0;" onclick="startListening()">
+            🎤 開始口說
+        </button>
+        <button id="clear-btn" class="action-btn" style="background-color: var(--clear); color: white; margin-bottom: 0;" onclick="clearContent()">
+            🗑️ 清除內容
+        </button>
+    </div>
 
     <div id="feedback" style="margin-bottom:10px; font-weight:bold;"></div>
     <div id="ans-display" class="ans-display" onclick="speakCurrent()"></div>
     
-    <div class="btn-group">
-        <button id="check-btn" class="action-btn btn-check" onclick="checkAnswer()">檢查答案</button>
+    <div class="btn-group" style="margin-top: 10px;">
+        <button id="check-btn" class="action-btn btn-send" onclick="checkAnswer()">🚀 送出答案</button>
         <button id="correct-btn" class="action-btn" onclick="checkCorrection()">訂正中...</button>
         <button class="action-btn btn-next" onclick="nextQuestion()">下一題</button>
         <button class="btn-back" onclick="goToMenu()">回主選單</button>
@@ -81,58 +91,45 @@
     if (SpeechRecognition) {
         recognition = new SpeechRecognition();
         recognition.lang = 'es-ES';
-        recognition.continuous = true; // 開啟連續辨識，支援停頓接龍
+        recognition.continuous = true; 
         recognition.interimResults = false;
 
         recognition.onresult = (e) => {
             const transcript = e.results[e.results.length - 1][0].transcript;
             const userInput = document.getElementById('user-input');
-            
-            // 語音接龍：不清除舊文字，將新片段接在後面
             userInput.value += (userInput.value ? " " : "") + transcript;
             userInput.focus();
-
-            // 即時反應
-            if (isCorrecting) {
-                handleTyping();
-            } else {
-                // 若已答對想重複測試，口說完自動重新判定
-                if (document.getElementById('check-btn').innerText.includes("再次檢查")) {
-                    checkAnswer();
-                }
-            }
+            
+            if (isCorrecting) handleTyping();
         };
 
         recognition.onend = () => {
             const btn = document.getElementById('mic-btn');
-            // 若 15 秒未到且仍處於聆聽狀態，自動重啟確保不中斷
-            if (btn.classList.contains('listening')) {
-                recognition.start();
-            } else {
-                resetMicBtn();
-            }
+            if (btn.classList.contains('listening')) recognition.start();
+            else resetMicBtn();
         };
     }
 
+    // 1. 清除內容功能
+    function clearContent() {
+        const userInput = document.getElementById('user-input');
+        userInput.value = "";
+        userInput.focus();
+        handleTyping(); // 重置按鈕狀態
+    }
+
     function startListening() {
-        if (!recognition) return alert("您的瀏覽器不支援口說");
+        if (!recognition) return alert("不支援口說");
         const btn = document.getElementById('mic-btn');
-        if (btn.classList.contains('listening')) {
-            stopRecognition();
-            return;
-        }
+        if (btn.classList.contains('listening')) { stopRecognition(); return; }
 
         try {
             recognition.start();
             btn.classList.add('listening');
-            btn.innerText = "正在聽... (點擊結束)";
-
+            btn.innerText = "聆聽中 (點擊結束)";
             clearTimeout(recognitionTimer);
             recognitionTimer = setTimeout(() => {
-                if (btn.classList.contains('listening')) {
-                    stopRecognition();
-                    document.getElementById('feedback').innerText = "聆聽逾時 (15秒)";
-                }
+                if (btn.classList.contains('listening')) stopRecognition();
             }, 15000);
         } catch (e) { console.error(e); }
     }
@@ -141,15 +138,14 @@
         if (recognition) {
             recognition.stop();
             resetMicBtn();
-            // 停止後自動檢查一次答案
-            if (!isCorrecting) checkAnswer();
+            // 注意：手動停止後不自動送出，讓使用者檢查完再按「送出」
         }
     }
 
     function resetMicBtn() {
         const btn = document.getElementById('mic-btn');
         btn.classList.remove('listening');
-        btn.innerText = "🎤 按下開始口說";
+        btn.innerText = "🎤 開始口說";
     }
 
     function initMenu() {
@@ -177,28 +173,26 @@
         document.getElementById('chinese-text').innerText = q.ch;
         const userInput = document.getElementById('user-input');
         userInput.value = ""; userInput.style.borderColor = "#ddd"; userInput.disabled = false;
-        userInput.placeholder = "請輸入或用說的...";
         document.getElementById('feedback').innerText = "";
         document.getElementById('ans-display').style.display = "none";
         document.getElementById('correct-btn').style.display = "none";
         document.getElementById('progress').innerText = `${currentIndex + 1} / ${currentQuestions.length}`;
         document.getElementById('score').innerText = `得分: ${currentScore}`;
         const checkBtn = document.getElementById('check-btn');
-        checkBtn.disabled = false; checkBtn.innerText = "檢查答案"; checkBtn.style.backgroundColor = "var(--primary)";
+        checkBtn.disabled = false; checkBtn.innerText = "🚀 送出答案"; checkBtn.style.backgroundColor = "var(--send)";
         userInput.focus();
     }
 
+    // 2. 送出與核對邏輯
     function checkAnswer() {
         const userInput = document.getElementById('user-input');
         const userValue = userInput.value.trim();
         const checkBtn = document.getElementById('check-btn');
         const feedback = document.getElementById('feedback');
         const correctAnswer = currentQuestions[currentIndex].sp;
-        
         const userClean = normalizeText(userValue);
         const correctClean = normalizeText(correctAnswer);
 
-        // 核心邏輯：答對或點擊「顯示正確答案」按鈕
         if (checkBtn.innerText === "顯示正確答案" || (userClean === correctClean && userValue !== "")) {
             if (userClean === correctClean) {
                 if (attemptCount !== -1) { currentScore += 10; attemptCount = -1; }
@@ -209,13 +203,12 @@
                 feedback.style.color = "var(--voice)";
             }
             showFullAnswer(correctAnswer);
-            checkBtn.innerText = "再次檢查 (已過關)";
+            checkBtn.innerText = "再次送出 (重複練習)";
             checkBtn.style.backgroundColor = "var(--success)";
-            checkBtn.disabled = false;
         } else {
             attemptCount++;
             if (attemptCount === 1) {
-                feedback.innerText = "不完全正確，請修正或再按一次顯示答案。";
+                feedback.innerText = "不完全正確，請修正或再按一次送出以顯示答案。";
                 feedback.style.color = "var(--danger)";
                 userInput.style.borderColor = "var(--danger)";
                 checkBtn.innerText = "顯示正確答案";
@@ -224,12 +217,11 @@
                 isCorrecting = true;
                 showFullAnswer(correctAnswer);
                 userInput.value = "";
-                userInput.placeholder = "請照著輸入一次以訂正...";
+                userInput.placeholder = "請訂正：請照著輸入一次正確答案...";
                 checkBtn.innerText = "請按下一題";
                 checkBtn.disabled = true;
                 document.getElementById('correct-btn').style.display = "block";
                 document.getElementById('correct-btn').innerText = "訂正中...";
-                document.getElementById('correct-btn').style.backgroundColor = "var(--warn)";
             }
         }
     }
@@ -237,7 +229,6 @@
     function handleTyping() {
         const userInput = document.getElementById('user-input');
         const checkBtn = document.getElementById('check-btn');
-        
         if (isCorrecting) {
             const correctBtn = document.getElementById('correct-btn');
             const correctAnswer = currentQuestions[currentIndex].sp;
@@ -245,7 +236,6 @@
                 correctBtn.innerText = "訂正完成 <";
                 correctBtn.style.backgroundColor = "var(--success)";
                 correctBtn.disabled = false;
-                userInput.style.borderColor = "var(--success)";
             } else {
                 correctBtn.innerText = "訂正中...";
                 correctBtn.disabled = true;
@@ -253,11 +243,9 @@
             }
             return;
         }
-
-        // 答對後重複測試時，輸入變動就重置按鈕文字
-        if (checkBtn.innerText.includes("再次檢查")) {
-            checkBtn.innerText = "檢查答案";
-            checkBtn.style.backgroundColor = "var(--primary)";
+        if (checkBtn.innerText.includes("再次送出")) {
+            checkBtn.innerText = "🚀 送出答案";
+            checkBtn.style.backgroundColor = "var(--send)";
         }
         userInput.style.borderColor = "#ddd";
     }
@@ -280,10 +268,8 @@
     }
 
     function nextQuestion() {
-        if (currentIndex < currentQuestions.length - 1) { 
-            currentIndex++; showQuestion(); 
-            document.querySelector('.btn-next').style.backgroundColor = "var(--secondary)";
-        } else { alert("課程結束！"); goToMenu(); }
+        if (currentIndex < currentQuestions.length - 1) { currentIndex++; showQuestion(); }
+        else { alert("課程結束！"); goToMenu(); }
     }
 
     function goToMenu() { document.getElementById('menu-screen').style.display = 'block'; document.getElementById('quiz-screen').style.display = 'none'; }
@@ -294,8 +280,6 @@
 </script>
 </body>
 </html>
-
-
 
 
 
