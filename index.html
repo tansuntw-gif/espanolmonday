@@ -101,23 +101,26 @@
         recognition.interimResults = false;
 
         recognition.onresult = (e) => {
-            const transcript = e.results[0][0].transcript;
-            const userInput = document.getElementById('user-input');
-            
-            // 無論對錯，先將聽到的文字顯示在對話框中
-            userInput.value = transcript;
-            
-            // 讓輸入框自動聚焦，方便使用者查看或修改
-            userInput.focus();
+    const transcript = e.results[0][0].transcript;
+    const userInput = document.getElementById('user-input');
+    
+    // 1. 無論對錯，先將聽到的文字顯示在對話框中
+    userInput.value = transcript;
+    
+    // 2. 自動聚焦
+    userInput.focus();
 
-            // 根據目前模式執行比對
-            if (isCorrecting) {
-                // 訂正模式：即時比對文字，若正確則綠色按鈕亮起
-                handleTyping(); 
-            } else {
-                // 一般模式：執行檢查邏輯（判斷對錯、給分、或進入訂正模式）
-                checkAnswer(); 
-            }
+    // 3. 根據目前模式執行比對
+    if (isCorrecting) {
+        handleTyping(); 
+    } else {
+        // --- 這裡加入一行微調 ---
+        // 確保口說後，按鈕外觀立刻恢復成「準備檢查」的藍色狀態
+        resetCheckBtn(); 
+        
+        // 執行檢查邏輯
+        checkAnswer(); 
+        }
         };
 
         recognition.onend = () => {
@@ -216,7 +219,7 @@
         userInput.focus();
     }
 
-    function checkAnswer() {
+function checkAnswer() {
         const userInput = document.getElementById('user-input');
         const userValue = userInput.value.trim();
         const checkBtn = document.getElementById('check-btn');
@@ -228,14 +231,27 @@
         const correctClean = normalizeText(correctAnswer);
 
         if (userClean === correctClean && userValue !== "") {
-            currentScore += 10;
+            // --- 答對邏輯 ---
             feedback.innerText = "¡Excelente! 答對了！🌟";
             feedback.style.color = "var(--success)";
+            userInput.style.borderColor = "var(--success)";
             showFullAnswer(correctAnswer);
-            checkBtn.disabled = true; 
-            checkBtn.innerText = "已完成";
+            
+            // 這裡不 disable 按鈕，而是改變文字，讓使用者知道可以重複測
+            checkBtn.innerText = "再次檢查 (已正確)";
+            checkBtn.style.backgroundColor = "var(--success)";
+            
+            // 如果是第一次答對，加分（避免重複測試一直加分）
+            if (attemptCount !== -1) { 
+                currentScore += 10;
+                document.getElementById('score').innerText = `得分: ${currentScore}`;
+                attemptCount = -1; // 用 -1 代表這題已經拿過分了
+            }
         } else {
+            // --- 答錯邏輯 ---
+            if (attemptCount === -1) attemptCount = 0; // 如果之前對了現在又改錯，重設計數
             attemptCount++;
+            
             if (attemptCount === 1) {
                 feedback.innerText = "不完全正確，請修正或再按一次顯示答案。";
                 feedback.style.color = "var(--danger)";
@@ -243,47 +259,36 @@
                 checkBtn.innerText = "顯示正確答案";
                 checkBtn.style.backgroundColor = "var(--warn)";
             } else {
-                isCorrecting = true;
-                feedback.innerText = "請根據下方答案進行訂正：";
-                feedback.style.color = "var(--voice)";
-                showFullAnswer(correctAnswer);
-                userInput.style.borderColor = "var(--voice)";
-                userInput.value = ""; 
-                userInput.placeholder = "請照著下方藍色答案輸入一次以解鎖下一題...";
-                checkBtn.disabled = true;
-                checkBtn.innerText = "請按下一題";
-                checkBtn.style.backgroundColor = "var(--secondary)";
-                correctBtn.style.display = "block";
-                correctBtn.innerText = "訂正中...";
-                correctBtn.disabled = true;
-                correctBtn.style.backgroundColor = "var(--warn)";
+                enterCorrectionMode(correctAnswer);
             }
         }
     }
 
+    // 當有新 input 時觸發 (無論是口說填入或手打)
     function handleTyping() {
         const userInput = document.getElementById('user-input');
-        const correctBtn = document.getElementById('correct-btn');
-        const correctAnswer = currentQuestions[currentIndex].sp;
-
-        if (!isCorrecting) {
-            resetCheckBtn();
+        const checkBtn = document.getElementById('check-btn');
+        
+        // 如果正在訂正模式，走訂正比對
+        if (isCorrecting) {
+            const correctBtn = document.getElementById('correct-btn');
+            const correctAnswer = currentQuestions[currentIndex].sp;
+            if (normalizeText(userInput.value) === normalizeText(correctAnswer)) {
+                correctBtn.innerText = "訂正完成 <";
+                correctBtn.style.backgroundColor = "var(--success)";
+                correctBtn.disabled = false;
+            } else {
+                correctBtn.innerText = "訂正中...";
+                correctBtn.disabled = true;
+            }
             return;
         }
 
-        const userClean = normalizeText(userInput.value);
-        const correctClean = normalizeText(correctAnswer);
-
-        if (userClean === correctClean) {
-            correctBtn.innerText = "訂正完成";
-            correctBtn.style.backgroundColor = "var(--success)";
-            correctBtn.disabled = false;
-            userInput.style.borderColor = "var(--success)";
-        } else {
-            correctBtn.innerText = "訂正中...";
-            correctBtn.style.backgroundColor = "var(--warn)";
-            correctBtn.disabled = true;
-        }
+        // 如果不是訂正模式，只要有新字輸入，就恢復「檢查按鈕」的原始狀態
+        checkBtn.disabled = false;
+        checkBtn.innerText = "檢查答案";
+        checkBtn.style.backgroundColor = "var(--primary)";
+        userInput.style.borderColor = "#ddd";
     }
 
     function checkCorrection() {
@@ -346,6 +351,7 @@
 </script>
 </body>
 </html>
+
 
 
 
