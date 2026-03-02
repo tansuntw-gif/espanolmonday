@@ -54,7 +54,7 @@ const allLessons = {
             { ch: "Felisa 比 Elisa 漂亮。José 沒有 Enrique 那麼帥。", sp: "Felisa es más guapa que Elisa. José es menos guapo que Enrique." },
             { ch: "Luisa 和 Lucía 一樣漂亮。", sp: "Luisa es tan guapa como Lucía." },
             { ch: "Felisa 說話比 Elisa 多。José 吃得比 Enrique 少。", sp: "Felisa habla más que Elisa. José come menos que Enrique." },
-            { ch: "我擁有的書比 Pedro 多 / 少 / 一樣多。", sp: "Yo tengo más libros que Pedro. / Yo tengo menos libros que Pedro. / Yo tengo tantos libros como Pedro." },
+            { ch: "我擁有的書比 Pedro 一樣多。", sp: "Yo tengo tantos libros como Pedro." },
             { ch: "哥哥/姊姊。弟弟/妹妹。", sp: "Hermano mayor. Hermano menor." },
             { ch: "Antonio 比我大。我比 Antonio 小。", sp: "Antonio es mayor que yo. Yo soy menor que Antonio." },
             { ch: "這幅畫比那幅好。這本書比那本差。", sp: "Este cuadro es mejor que aquel. Este libro es peor que aquel." },
@@ -90,3 +90,4 @@ const allLessons = {
         ] 
 
 };
+
