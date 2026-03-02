@@ -48,7 +48,7 @@ const allLessons = {
             { ch: "你有兄弟姊妹嗎？有。這是我的哥哥，這是我的妹妹。", sp: "¿Tienes hermanos? Sí. Este es mi hermano mayor y esta es mi hermana menor." },
             { ch: "你好，Ana。這位是 David，我的丈夫。", sp: "Hola, Ana. Este es David, mi marido." },
             { ch: "那個男孩是妳兒子，他很高。是的，他叫 Miguel，五歲，很調皮。", sp: "Aquel chico es tu hijo. Es muy alto. Sí, se llama Miguel. Tiene cinco años y es travieso." },
-            { ch: "Alberto 四歲，和妳兒子一樣調皮。但 Alberto 比 Miguel 矮。", sp: "Alberto tiene cuatro años y es tan travieso como tu hijo. Pero Alberto es más bajo que Miguel." },
+            { ch: "David今年四歲和妳兒子一樣調皮。但 David 比 Miguel 矮。", sp: "David tiene cuatro años y es tan travieso como tu hijo. Pero David es más bajo que Miguel." },
             { ch: "那邊那些男孩是我的同事。那個女孩是我妹妹。", sp: "Aquellos chicos son mis compañeros. Esa chica es mi hermana menor." },
             { ch: "這是我兄弟。這是我姊妹。", sp: "Este es mi hermano. Esta es mi hermana." },
             { ch: "Felisa 比 Elisa 漂亮。José 沒有 Enrique 那麼帥。", sp: "Felisa es más guapa que Elisa. José es menos guapo que Enrique." },
@@ -58,7 +58,7 @@ const allLessons = {
             { ch: "哥哥/姊姊。弟弟/妹妹。", sp: "Hermano mayor. Hermano menor." },
             { ch: "Antonio 比我大。我比 Antonio 小。", sp: "Antonio es mayor que yo. Yo soy menor que Antonio." },
             { ch: "這幅畫比那幅好。這本書比那本差。", sp: "Este cuadro es mejor que aquel. Este libro es peor que aquel." },
-            { ch: "那個高個子男人是誰？是我堂兄弟。在他右邊的是我叔叔。", sp: "¿Quién es el hombre alto? Es mi primo. A la derecha de mi primo está mi tío." },
+            { ch: "那個高個子男人是誰？是我堂兄弟。在他右邊的是我叔叔。", sp: "¿Quién es el hombre alto? Es mi primo. A la derecha de mi primo es mi tío." },
             { ch: "那些女人是誰？", sp: "¿Quiénes son las mujeres?" },
             { ch: "那位年長的女性是我嬸嬸。她在我的堂姊妹左邊。", sp: "La mujer mayor es mi tía. Está a la izquierda de mi prima." },
             { ch: "你有幾個兄弟姊妹？", sp: "¿Cuántos hermanos tienes?" },
@@ -90,4 +90,5 @@ const allLessons = {
         ] 
 
 };
+
 
