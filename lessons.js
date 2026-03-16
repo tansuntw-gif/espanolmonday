@@ -105,7 +105,7 @@ const allLessons = {
     { "ch": "你知道我可以在哪裡野餐嗎？", "sp": "¿Sabes dónde puedo hacer pícnic?" },
     { "ch": "我知道這附近的一座公園。你可以在那裡野餐。", "sp": "Conozco un parke cerca de aquí. Puedes hacer pícnic allí." },
     { "ch": "那我可以在哪裡喝咖啡呢？", "sp": "¿Y dónde puedo tomar café?" },
-    { "ch": "我不知道，但我們可以在網路上搜尋。", "sp": "No lo sé, pero podemos buscar por internet." },
+    { "ch": "我不知道(這件事)，但我們可以在網路上搜尋。", "sp": "No lo sé, pero podemos buscar por internet." },
     { "ch": "我們和愛娃還有安立奎一起去露營如何？", "sp": "¿Qué tal si vamos de camping con Eva y Enrique?" },
     { "ch": "好主意！我們可以在那裡烤肉，還有做海鮮飯。", "sp": "¡Buena idea! Podemos hacer barbacoa y paella allí." },
     { "ch": "但是，你知道怎麼做海鮮飯嗎？", "sp": "Pero, ¿Sabes cómo hacer paella?" },
