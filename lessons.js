@@ -111,6 +111,65 @@ const allLessons = {
     { "ch": "但是，你知道怎麼做海鮮飯嗎？", "sp": "Pero, ¿Sabes cómo hacer paella?" },
     { "ch": "當然。而且，我還會做水果酒和小菜。", "sp": "Por supuesto. Además, voy a hacer sangría y tapas." },
       ],
+
+    "第 9 課：奶奶的生日與公司派對": [
+    // 主題對話
+    { "ch": "他幾歲？", "sp": "¿Cuántos años tiene?" },
+    { "ch": "這個星期日我們一起喝個咖啡，你覺得如何？", "sp": "¿Qué te parece si tomamos un café juntos este domingo?" },
+    { "ch": "這個星期日我們要慶慶祝奶奶的生日。", "sp": "Este domingo celebramos el cumpleaños de mi abuela." },
+    { "ch": "真好！她（今年）滿幾歲？", "sp": "¡Qué bien! ¿Cuántos años cumple?" },
+    { "ch": "(今年) 她要滿 70 歲了。", "sp": "Cumple setenta años." },
+    { "ch": "她年紀大了，但她（還是）很常跟我爺爺一起旅行。", "sp": "Es mayor, pero viaja mucho con mi abuelo." },
+    { "ch": "你的爺爺幾歲？", "sp": "¿Cuántos años tiene tu abuelo?" },
+    { "ch": "他 72 歲。", "sp": "Tiene setenta y dos años." },
+    { "ch": "明天是我公司五週年。", "sp": "Mañana es el quinto aniversario de mi empresa." },
+    { "ch": "我們（明天）要辦一場派對。", "sp": "Vamos a hacer una fiesta." },
+    { "ch": "恭喜！你們在哪裡辦派對？", "sp": "¡Felicidades! ¿Dónde hacéis la fiesta?" },
+    { "ch": "在「Gustísimo」義式餐廳。", "sp": "En el restaurante italiano Gustísimo." },
+    { "ch": "餐廳在 Melissa 飯店四樓。", "sp": "Está en el tercer piso del Hotel Melissa." },
+    { "ch": "多少人會去參加派對？", "sp": "¿Cuántas personas van a la fiesta?" },
+    { "ch": "超過 50 人。", "sp": "Más de cincuenta." },
+    { "ch": "如果你想要的話，可以跟我一起來。", "sp": "Puedes venir conmigo si quieres." },
+
+    // 進階日常對話：餐廳訂位
+    { "ch": "你好！我想要訂位。", "sp": "¡Hola! Quiero reservar una mesa." },
+    { "ch": "您想要幾個人的位子？", "sp": "¿Para cuántas personas?" },
+    { "ch": "五個人。", "sp": "Para cinco personas." },
+    { "ch": "（用餐時間）什麼時候？", "sp": "¿Para cuándo?" },
+    { "ch": "明天晚上。", "sp": "Para mañana por la noche." },
+    { "ch": "好的。麻煩（給我）您的姓、名及手機電話號碼。", "sp": "Muy bien. Su apellido y nombre, el número de teléfono móvil, por favor." },
+    { "ch": "路卡斯．戈梅斯。我的號碼是 693 33 22 10。", "sp": "Lucas Gómez. Mi número es el seiscientos noventa y tres trescientos treinta y dos doscientos diez." },
+
+    // 年齡與家庭狀況詢問
+    { "ch": "你幾歲？", "sp": "¿Cuántos años tienes?" },
+    { "ch": "我 31 歲。", "sp": "Tengo treinta y un años." },
+    { "ch": "你（這次生日）滿幾歲？", "sp": "¿Cuántos años cumples?" },
+    { "ch": "滿 48 歲。", "sp": "Cumplo cuarenta y ocho años." },
+    { "ch": "你覺得我們去露營怎麼樣？", "sp": "¿Qué te parece si vamos de camping?" },
+    { "ch": "我覺得很好。", "sp": "Me parece muy bien." },
+    { "ch": "你叫什麼名字？你來自哪裡？", "sp": "¿Cómo te llamas? ¿Y de dónde eres?" },
+    { "ch": "我叫做安東尼，我來自西班牙。", "sp": "Me llamo Antonio y soy de España." },
+    { "ch": "我 22 歲。", "sp": "Tengo veintidós años." },
+    { "ch": "你有幾個兄弟姊妹？", "sp": "¿Cuántos hermanos tienes?" },
+    { "ch": "我有一個哥哥和一個姊姊。", "sp": "Tengo un hermano mayor y una hermana mayor." },
+    { "ch": "我是最小的。", "sp": "Soy el más pequeño." },
+
+    // 數量練習與生活應用
+    { "ch": "我住在第 15 層。", "sp": "Vivo en el piso quince." },
+    { "ch": "超市裡有幾串香蕉？", "sp": "¿Cuántos racimos de plátanos hay en el supermercado?" },
+    { "ch": "超市裡有八串香蕉。", "sp": "Hay ocho racimos de plátanos en el supermercado." },
+
+    // 常見單字與短語
+    { "ch": "八串香蕉", "sp": "ocho racimos de plátanos" },
+    { "ch": "三十一個西洋梨", "sp": "treinta y una peras" },
+    { "ch": "二十八個蘋果", "sp": "veintiocho manzanas" },
+    { "ch": "五個西瓜", "sp": "cinco sandías" },
+    { "ch": "四十二個檸檬", "sp": "cuarenta y dos limones" },
+    { "ch": "十三個鳳梨", "sp": "trece piñas" },
+    { "ch": "六十四個柳橙", "sp": "sesenta y cuatro naranjas" },
+    { "ch": "十七串葡萄", "sp": "diecisiete racimos de uvas" },
+    { "ch": "五十九個石榴", "sp": "cincuenta y nueve granadas" }
+    ],
 };
 
 
