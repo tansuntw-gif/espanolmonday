@@ -112,7 +112,7 @@ const allLessons = {
     { "ch": "當然。而且，我還會做水果酒和小菜。", "sp": "Por supuesto. Además, voy a hacer sangría y tapas." },
       ],
 
-    "第 9 課：奶奶的生日與公司派對": [
+    "第 9 課：¿Cuántos años tiene?(他幾歲)": [
     // 主題對話
     { "ch": "他幾歲？", "sp": "¿Cuántos años tiene?" },
     { "ch": "這個星期日我們一起喝個咖啡，你覺得如何？", "sp": "¿Qué te parece si tomamos un café juntos este domingo?" },
