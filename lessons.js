@@ -170,6 +170,71 @@ const allLessons = {
     { "ch": "十七串葡萄", "sp": "diecisiete racimos de uvas" },
     { "ch": "五十九個石榴", "sp": "cincuenta y nueve granadas" }
     ],
+
+    "第 10 課：¿Qué fecha es hoy?(時間、日期與日常作息)": [
+    // 主題對話 (1)：生日計畫
+    { "ch": "今天星期幾？", "sp": "¿Qué día es hoy?" },
+    { "ch": "今天星期六。", "sp": "Hoy es sábado." },
+    { "ch": "今天幾月幾號？", "sp": "¿Qué fecha es hoy?" },
+    { "ch": "今天是 5 月 5 日。怎麼了？", "sp": "Es 5 de mayo. ¿Qué pasa?" },
+    { "ch": "明天是露西亞的生日。", "sp": "Mañana es el cumpleaños de Lucía." },
+    { "ch": "我們可以為她的生日做一個巧克力蛋糕。", "sp": "Podemos hacer una tarta de chocolate para su cumpleaños." },
+    { "ch": "好主意！", "sp": "¡Buena idea!" },
+
+    // 主題對話 (2)：日常作息
+    { "ch": "妳幾點起床、幾點就寢？", "sp": "¿A qué hora te levantas y te duermes?" },
+    { "ch": "我 7 點半起床，10 點就寢。", "sp": "Me levanto a las 7 y media y me duermo a las 10." },
+    { "ch": "妳幾點吃早餐？", "sp": "¿A qué hora desayunas?" },
+    { "ch": "我 9 點吃早餐，然後搭捷運去上班。", "sp": "Desayuno a las 9 y luego voy al trabajo en metro." },
+    { "ch": "妳在家還是在辦公室吃早餐？", "sp": "¿Desayunas en casa o en la oficina?" },
+    { "ch": "我通常在家吃早餐。", "sp": "Normalmente desayuno en casa." },
+
+    // 本課文法：時間與時段的表達
+    { "ch": "現在幾點？", "sp": "¿Qué hora es?" },
+    { "ch": "現在 2 點半。", "sp": "Son las dos y media." },
+    { "ch": "現在 1 點。", "sp": "Es la una." },
+    { "ch": "現在 2 點。", "sp": "Son las dos." },
+    { "ch": "現在 3 點。", "sp": "Son las tres." },
+    { "ch": "現在 1 點 20 分。", "sp": "Es la una y veinte." },
+    { "ch": "現在 10 點半。", "sp": "Son las diez y media." },
+    { "ch": "現在 12 點 15 分。", "sp": "Son las doce y cuarto." },
+    { "ch": "現在 12:50 (1點減10分)。", "sp": "Es la una menos diez." },
+    { "ch": "現在 1:45 (2點減15分)。", "sp": "Son las dos menos cuarto." },
+    { "ch": "你幾點起床？", "sp": "¿A qué hora te levantas?" },
+    { "ch": "我六點起床。", "sp": "Me levanto a las seis." },
+    { "ch": "我早上7點吃早餐。", "sp": "Desayuno a las siete de la mañana." },
+    { "ch": "我中午 12 點吃午餐。", "sp": "Como a las doce del mediodía." },
+    { "ch": "我早上吃早餐。", "sp": "Desayuno por la mañana." },
+    { "ch": "我中午吃午餐。", "sp": "Como al mediodía." },
+
+    // 日期與特定日子的表達
+    { "ch": "今天是 5 月 15 日星期一。", "sp": "Hoy es lunes, 15 de mayo." },
+    { "ch": "今天是 5 月 15 日。", "sp": "Es 15 de mayo." },
+    { "ch": "你的生日是什麼時候？", "sp": "¿Cuándo es tu cumpleaños?" },
+    { "ch": "是 5 月 20 日。", "sp": "Es el 20 de mayo." },
+    { "ch": "母親節是什麼時候？", "sp": "¿Cuándo es el Día de la Madre?" },
+    { "ch": "是 5 月 8 日星期日。", "sp": "Es el domingo, 8 de mayo." },
+
+    // 表示日常動作的反身動詞
+    { "ch": "我 7 點起床。", "sp": "Me levanto a las 7." },
+    { "ch": "我 6:30 醒來。", "sp": "Me despierto a las 6 y media." },
+    { "ch": "我刷牙。", "sp": "Me cepillo los dientes." },
+    { "ch": "我爸爸每天早上刮鬍子。", "sp": "Mi padre se afeita cada mañana." },
+    { "ch": "她出門前梳頭。", "sp": "Se peina el pelo antes de salir." },
+    { "ch": "我兒子 7 點換穿衣服。", "sp": "Mi hijo se viste a las siete." },
+    { "ch": "她回家後洗澡。", "sp": "Se ducha después de volver a casa." },
+    { "ch": "我爺爺很早就就寢。", "sp": "Mi abuelo se acuesta muy temprano." },
+
+    // 對話練習與進階對話
+    { "ch": "我 6 點半吃早餐。", "sp": "Desayuno a las seis y media." },
+    { "ch": "你幾點出門？", "sp": "¿A qué hora sales de casa?" },
+    { "ch": "我 8 點出門。", "sp": "Salgo a las ocho." },
+    { "ch": "今天星期五，是 5 號。", "sp": "Hoy es viernes, día 5." },
+    { "ch": "明天是我們的結婚週年紀念日。我們要怎麼慶祝？", "sp": "Mañana es nuestro aniversario. ¿Cómo celebramos?" },
+    { "ch": "你覺得我們在一間義大利餐廳吃晚餐怎麼樣？", "sp": "¿Qué te parece si cenamos en un restaurante italiano?" },
+    { "ch": "但明天是星期六。訂位很困難。", "sp": "Pero mañana es sábado. Es muy difícil hacer la reserva." },
+    { "ch": "我來打電話問問。", "sp": "Voy a llamar para preguntar." }
+    ],
 };
 
 
